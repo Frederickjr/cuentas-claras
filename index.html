@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cuentas Claras - Control de Gastos en Pareja</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4f46e5',
+                        secondary: '#10b981',
+                        dark: '#1e293b',
+                        light: '#f8fafc',
+                        danger: '#ef4444'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .modal-active { overflow: hidden; }
+        .syncing-icon { animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: .5; transform: scale(1.1); }
+        }
+        #app-content { display: none; }
+    </style>
+</head>
+<body class="text-slate-800 antialiased h-screen flex flex-col">
+
+    <!-- PANTALLA DE LOGIN -->
+    <div id="login-screen" class="fixed inset-0 z-[100] bg-slate-900 flex flex-col justify-center items-center p-4">
+        <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-sm text-center">
+            <div class="w-16 h-16 bg-indigo-100 text-primary rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
+                <i class="fa-solid fa-lock"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-dark mb-2">Cuentas Claras</h2>
+            <p class="text-slate-500 text-sm mb-6">Acceso privado para la pareja</p>
+            <form id="login-form" class="space-y-4">
+                <input type="email" id="login-email" placeholder="Correo electrónico" class="w-full border border-slate-300 p-3.5 rounded-xl outline-none focus:ring-2 focus:ring-primary bg-slate-50" required>
+                <input type="password" id="login-password" placeholder="Contraseña" class="w-full border border-slate-300 p-3.5 rounded-xl outline-none focus:ring-2 focus:ring-primary bg-slate-50" required>
+                <button type="submit" id="btn-login" class="w-full bg-primary hover:bg-indigo-600 text-white font-bold py-3.5 rounded-xl shadow-lg transition transform hover:scale-105">
+                    Entrar de forma segura
+                </button>
+            </form>
+            <p id="login-error" class="text-danger text-sm mt-4 hidden"></p>
+        </div>
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL DE LA APP -->
+    <div id="app-content" class="h-full flex flex-col">
+        <header class="bg-primary text-white shadow-md z-10 relative shrink-0">
+            <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-heart-circle-check text-2xl text-pink-300"></i>
+                    <h1 class="text-xl font-bold tracking-tight">Cuentas Claras</h1>
+                </div>
+                <div class="flex gap-3 sm:gap-4 items-center">
+                    <div id="cloud-status" class="hidden sm:flex items-center gap-2 text-xs font-medium bg-indigo-800/50 px-3 py-1.5 rounded-full">
+                        <i class="fa-solid fa-cloud text-slate-300"></i><span id="cloud-text">Conectando...</span>
+                    </div>
+                    <button id="btn-settings" class="hover:bg-indigo-700 p-2 rounded-full transition" title="Configuración"><i class="fa-solid fa-gear"></i></button>
+                    <button id="btn-logout" class="hover:bg-indigo-700 p-2 rounded-full transition text-pink-200" title="Cerrar Sesión"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
+                </div>
+            </div>
+        </header>
+
+        <div class="bg-dark text-slate-300 text-xs py-2 shadow-inner shrink-0">
+            <div class="max-w-6xl mx-auto px-4 flex justify-between items-center overflow-x-auto">
+                <div class="flex gap-4 min-w-max">
+                    <span class="flex items-center gap-1"><i class="fa-solid fa-building-columns text-yellow-500"></i> BCV: <span id="rate-bcv" class="font-mono font-bold text-white">...</span> Bs</span>
+                    <span class="flex items-center gap-1"><i class="fa-brands fa-bitcoin text-yellow-400"></i> Paralelo: <span id="rate-binance" class="font-mono font-bold text-white">...</span> Bs</span>
+                </div>
+                <button id="btn-refresh-rates" class="text-slate-400 hover:text-white shrink-0 ml-4"><i class="fa-solid fa-rotate-right"></i></button>
+            </div>
+        </div>
+
+        <main class="flex-grow overflow-y-auto pb-24">
+            <div class="max-w-6xl mx-auto px-4 py-6 space-y-6">
+                <div class="flex justify-between items-center bg-white p-3 rounded-2xl shadow-sm border border-slate-200">
+                    <h2 class="text-sm font-bold text-slate-500 uppercase tracking-wide ml-2 hidden sm:block"><i class="fa-regular fa-calendar-days mr-2"></i> Balance del Mes</h2>
+                    <div class="flex items-center gap-2 w-full sm:w-auto justify-center">
+                        <button id="prev-month" class="p-2 hover:bg-slate-100 rounded-full text-slate-500 transition"><i class="fa-solid fa-chevron-left"></i></button>
+                        <input type="month" id="month-selector" class="border-none bg-slate-50 font-bold text-dark rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-primary outline-none cursor-pointer">
+                        <button id="next-month" class="p-2 hover:bg-slate-100 rounded-full text-slate-500 transition"><i class="fa-solid fa-chevron-right"></i></button>
+                    </div>
+                </div>
+
+                <section class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <!-- Gastos Comunes -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+                        <div class="p-5 bg-gradient-to-r from-slate-50 to-white border-b border-slate-100 relative overflow-hidden">
+                            <div class="absolute -right-4 -top-4 opacity-5"><i class="fa-solid fa-users text-8xl"></i></div>
+                            <h3 class="text-sm font-bold text-slate-700 mb-1 flex items-center gap-2 uppercase tracking-wide relative z-10"><i class="fa-solid fa-users text-primary"></i> Gastos Comunes</h3>
+                            <div class="flex justify-between items-end mb-3 relative z-10">
+                                <div class="text-3xl font-bold text-dark">$<span id="shared-spent">0.00</span></div>
+                                <div class="text-sm text-slate-500 font-medium">Fondo: $<span id="shared-target">0</span></div>
+                            </div>
+                            <div class="w-full bg-slate-200 rounded-full h-2.5 mb-1 relative z-10"><div id="shared-progress" class="bg-primary h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div></div>
+                        </div>
+                        <div class="p-5 flex-grow flex flex-col justify-center bg-slate-50/50">
+                            <div id="settlement-box" class="bg-orange-50 border border-orange-200 rounded-xl p-4 flex items-start gap-3 hidden">
+                                <i class="fa-solid fa-scale-unbalanced text-orange-500 text-xl mt-1"></i>
+                                <div><h4 class="text-sm font-bold text-orange-800">Ajuste de Cuentas</h4><p id="settlement-text" class="text-sm text-orange-700 mt-1">Calculando...</p></div>
+                            </div>
+                            <div id="settlement-ok" class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center gap-3">
+                                <i class="fa-solid fa-check-circle text-emerald-500 text-xl"></i><p class="text-sm text-emerald-700 font-medium">Cuentas al día.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta P1 -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 relative overflow-hidden flex flex-col">
+                        <div class="absolute -right-4 -top-4 opacity-5"><i class="fa-solid fa-circle-user text-8xl"></i></div>
+                        <h3 class="text-sm font-bold text-indigo-900 uppercase tracking-wide mb-3 partner1-name relative z-10">Dougleisy</h3>
+                        <div class="space-y-3 text-sm relative z-10 flex-grow">
+                            <div class="flex justify-between border-b border-slate-50 pb-2"><span>Ingresos:</span><span class="font-bold text-emerald-600">+$<span id="p1-income">0.00</span></span></div>
+                            <div class="flex justify-between border-b border-slate-50 pb-2"><span>Aportó a Comunes:</span><span class="font-medium text-slate-800">-$<span id="p1-shared-paid">0.00</span></span></div>
+                            <div class="flex justify-between pb-1"><span>Gastos Personales:</span><span class="font-medium text-danger">-$<span id="p1-ind-paid">0.00</span></span></div>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-slate-100 relative z-10 bg-indigo-50/50 -mx-5 -mb-5 p-5">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-bold text-slate-500 uppercase">Disponible Libre</span><span class="text-2xl font-bold text-indigo-700">$<span id="p1-available">0.00</span></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta P2 -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 relative overflow-hidden flex flex-col">
+                        <div class="absolute -right-4 -top-4 opacity-5"><i class="fa-regular fa-circle-user text-8xl"></i></div>
+                        <h3 class="text-sm font-bold text-teal-900 uppercase tracking-wide mb-3 partner2-name relative z-10">Frederick</h3>
+                        <div class="space-y-3 text-sm relative z-10 flex-grow">
+                            <div class="flex justify-between border-b border-slate-50 pb-2"><span>Ingresos:</span><span class="font-bold text-emerald-600">+$<span id="p2-income">0.00</span></span></div>
+                            <div class="flex justify-between border-b border-slate-50 pb-2"><span>Aportó a Comunes:</span><span class="font-medium text-slate-800">-$<span id="p2-shared-paid">0.00</span></span></div>
+                            <div class="flex justify-between pb-1"><span>Gastos Personales:</span><span class="font-medium text-danger">-$<span id="p2-ind-paid">0.00</span></span></div>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-slate-100 relative z-10 bg-teal-50/50 -mx-5 -mb-5 p-5">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-bold text-slate-500 uppercase">Disponible Libre</span><span class="text-2xl font-bold text-teal-700">$<span id="p2-available">0.00</span></span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col p-5">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-base font-bold text-dark flex items-center gap-2"><i class="fa-solid fa-list-check text-primary"></i> Checklist Fijos del Mes</h2>
+                        <span id="fixed-progress-text" class="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-md shadow-inner">0 / 0 pagados</span>
+                    </div>
+                    <div id="fixed-expenses-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></div>
+                </section>
+
+                <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+                    <div class="px-5 py-4 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-slate-50">
+                        <h2 class="text-base font-bold text-dark">Historial de Transacciones</h2>
+                    </div>
+                    <!-- Pestañas -->
+                    <div class="flex gap-2 p-3 border-b border-slate-100 bg-slate-50/50 overflow-x-auto custom-scrollbar" id="tabs-container">
+                        <button class="tab-btn px-4 py-2 rounded-lg text-sm font-bold transition-all text-primary border border-primary bg-white shadow-sm whitespace-nowrap" data-tab="all">Todos</button>
+                        <button class="tab-btn px-4 py-2 rounded-lg text-sm font-bold transition-all text-slate-500 hover:bg-slate-100 border border-transparent whitespace-nowrap" data-tab="shared">Comunes</button>
+                        <button class="tab-btn px-4 py-2 rounded-lg text-sm font-bold transition-all text-slate-500 hover:bg-slate-100 border border-transparent whitespace-nowrap partner1-name-display" data-tab="p1">Dougleisy</button>
+                        <button class="tab-btn px-4 py-2 rounded-lg text-sm font-bold transition-all text-slate-500 hover:bg-slate-100 border border-transparent whitespace-nowrap partner2-name-display" data-tab="p2">Frederick</button>
+                    </div>
+                    <div class="divide-y divide-slate-100" id="expenses-list"></div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- FAB -->
+    <div class="fixed bottom-6 right-6 lg:bottom-10 lg:right-10 z-40 hidden" id="fab-button">
+        <button id="btn-open-add" class="bg-primary hover:bg-indigo-600 text-white rounded-full w-14 h-14 shadow-lg flex items-center justify-center text-2xl transition transform hover:scale-105"><i class="fa-solid fa-plus"></i></button>
+    </div>
+
+    <!-- Modal Formulario Principal -->
+    <div id="add-modal" class="fixed inset-0 z-50 hidden bg-slate-900/60 transition-opacity backdrop-blur-sm flex justify-center items-center p-4">
+        <div class="bg-white w-full sm:w-[32rem] max-h-[95vh] flex flex-col rounded-2xl shadow-2xl">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 rounded-t-2xl shrink-0">
+                <h3 class="text-lg font-bold text-dark" id="modal-title">Registrar</h3>
+                <button type="button" id="btn-close-add" class="text-slate-400 hover:text-dark transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <form id="expense-form" class="p-6 space-y-5 overflow-y-auto custom-scrollbar">
+                <input type="hidden" id="edit-id" value="">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">Tipo de Movimiento</label>
+                        <div class="flex bg-slate-100 p-1 rounded-lg">
+                            <label class="flex-1 text-center cursor-pointer"><input type="radio" name="trans-type" value="expense" checked class="peer sr-only"><div class="py-2 rounded-md peer-checked:bg-white peer-checked:shadow peer-checked:text-danger font-bold text-sm text-slate-500">Gasto</div></label>
+                            <label class="flex-1 text-center cursor-pointer"><input type="radio" name="trans-type" value="income" class="peer sr-only"><div class="py-2 rounded-md peer-checked:bg-white peer-checked:shadow peer-checked:text-emerald-600 font-bold text-sm text-slate-500">Ingreso</div></label>
+                        </div>
+                    </div>
+                    <div><label class="block text-sm font-semibold text-slate-700 mb-1">Fecha</label><input type="date" id="exp-date" required class="w-full border border-slate-300 rounded-lg px-3 py-2.5"></div>
+                </div>
+                <div id="scope-container">
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">¿A quién afecta este gasto?</label>
+                    <div class="flex bg-slate-100 p-1 rounded-lg">
+                        <label class="flex-1 text-center cursor-pointer"><input type="radio" name="exp-scope" value="shared" checked class="peer sr-only"><div class="py-2 rounded-md peer-checked:bg-white peer-checked:shadow peer-checked:text-primary font-bold text-sm text-slate-500"><i class="fa-solid fa-users mr-1"></i> Pareja</div></label>
+                        <label class="flex-1 text-center cursor-pointer"><input type="radio" name="exp-scope" value="individual" class="peer sr-only"><div class="py-2 rounded-md peer-checked:bg-white peer-checked:shadow peer-checked:text-slate-800 font-bold text-sm text-slate-500"><i class="fa-solid fa-user mr-1"></i> Personal</div></label>
+                    </div>
+                </div>
+                <div><label class="block text-sm font-semibold text-slate-700 mb-1">Descripción</label><input type="text" id="exp-desc" required placeholder="Ej. Colegio, Quincena, Cena" class="w-full border border-slate-300 rounded-lg px-3 py-2.5"></div>
+                <div class="grid grid-cols-12 gap-3">
+                    <div class="col-span-5"><label class="block text-sm font-semibold text-slate-700 mb-1">Moneda</label><select id="exp-currency" class="w-full border border-slate-300 rounded-lg px-2 py-2.5 font-bold"><option value="USD">USD ($)</option><option value="VES">VES (Bs)</option></select></div>
+                    <div class="col-span-7"><label class="block text-sm font-semibold text-slate-700 mb-1">Monto</label><input type="number" id="exp-amount" required step="0.01" min="0.01" placeholder="0.00" class="w-full border border-slate-300 rounded-lg px-3 py-2.5 font-bold text-lg"></div>
+                    <div id="rate-container" class="col-span-12 hidden bg-slate-50 p-3 rounded-lg border border-slate-200">
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Tasa Usada (Bs por $)</label>
+                        <div class="flex flex-col sm:flex-row gap-2"><input type="number" id="exp-rate" step="0.01" class="w-full sm:w-1/2 border border-slate-300 rounded-lg px-3 py-2 font-mono"><div class="flex gap-2"><button type="button" id="btn-use-bcv" class="text-xs bg-blue-100 text-blue-700 px-3 py-2 rounded font-bold">Usar BCV</button><button type="button" id="btn-use-usdt" class="text-xs bg-yellow-100 text-yellow-700 px-3 py-2 rounded font-bold">Usar Paralelo</button></div></div>
+                        <div class="text-right text-xs mt-2 text-slate-500">Se guardará contablemente como: <span id="converted-usd" class="font-bold text-emerald-600 text-base">$0.00</span></div>
+                    </div>
+                    <div class="col-span-12"><label class="block text-sm font-semibold text-slate-700 mb-1">Categoría</label><select id="exp-category" class="w-full border border-slate-300 rounded-lg px-3 py-2.5 bg-white"></select></div>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1" id="payer-label">¿Quién paga / Quién recibe?</label>
+                    <div class="flex bg-slate-100 p-1 rounded-lg">
+                        <label class="flex-1 text-center cursor-pointer"><input type="radio" name="exp-payer" value="p1" checked class="peer sr-only"><div class="py-2 rounded-md peer-checked:bg-white peer-checked:shadow peer-checked:text-indigo-600 font-bold text-sm text-slate-500 partner1-name-display">P1</div></label>
+                        <label class="flex-1 text-center cursor-pointer"><input type="radio" name="exp-payer" value="p2" class="peer sr-only"><div class="py-2 rounded-md peer-checked:bg-white peer-checked:shadow peer-checked:text-teal-600 font-bold text-sm text-slate-500 partner2-name-display">P2</div></label>
+                    </div>
+                </div>
+                <div class="pt-4 pb-2"><button type="submit" class="w-full bg-dark hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl shadow-lg transition"><i class="fa-solid fa-cloud-arrow-up mr-2"></i> Guardar en la Nube</button></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Ajustes -->
+    <div id="settings-modal" class="fixed inset-0 z-50 hidden bg-slate-900/60 transition-opacity backdrop-blur-sm flex justify-center items-center p-4">
+        <div class="bg-white w-full max-w-md rounded-2xl shadow-xl overflow-hidden p-6">
+            <h3 class="text-lg font-bold mb-4 text-dark"><i class="fa-solid fa-gear mr-2"></i> Configuración de Presupuesto</h3>
+            <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100 mb-4">
+                <p class="text-xs text-indigo-800 mb-3 font-medium">Define los aportes acordados para los gastos de pareja. Esto sirve para calcular si alguien debe dinero para equilibrar.</p>
+                <div class="space-y-3">
+                    <div class="flex gap-2"><input type="text" id="set-p1-name" class="border border-slate-300 p-2.5 rounded-lg w-1/2 font-medium" placeholder="Nombre Pareja 1"><input type="number" id="set-p1-amount" class="border border-slate-300 p-2.5 rounded-lg w-1/2 font-bold" placeholder="Aporte $"></div>
+                    <div class="flex gap-2"><input type="text" id="set-p2-name" class="border border-slate-300 p-2.5 rounded-lg w-1/2 font-medium" placeholder="Nombre Pareja 2"><input type="number" id="set-p2-amount" class="border border-slate-300 p-2.5 rounded-lg w-1/2 font-bold" placeholder="Aporte $"></div>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button id="btn-close-settings" class="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 rounded-xl font-bold transition">Cerrar</button>
+                <button id="btn-save-settings" class="w-2/3 bg-dark hover:bg-slate-800 text-white py-3 rounded-xl font-bold shadow transition">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Borrar -->
+    <div id="confirm-modal" class="fixed inset-0 z-[60] hidden bg-slate-900/60 flex justify-center items-center p-4">
+        <div class="bg-white rounded-2xl p-6 text-center max-w-sm w-full">
+            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-danger text-3xl"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <h3 class="text-lg font-bold mb-2">¿Eliminar Registro?</h3>
+            <p class="text-sm text-slate-500 mb-6">Esta acción borrará este registro de la base de datos permanentemente.</p>
+            <div class="flex gap-3">
+                <button id="btn-cancel-delete" class="flex-1 bg-slate-100 p-2.5 rounded-xl font-bold text-slate-700 hover:bg-slate-200">Cancelar</button>
+                <button id="btn-confirm-delete" class="flex-1 bg-danger hover:bg-red-600 text-white p-2.5 rounded-xl font-bold">Sí, eliminar</button>
+            </div>
+        </div>
+    </div>
+    <div id="toast-container" class="fixed top-4 right-4 z-[70] flex flex-col gap-2"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // CONFIGURACIÓN REAL PROPORCIONADA POR EL USUARIO
+        const firebaseConfig = {
+            apiKey: "AIzaSyBMv-bgP2BuaO7d1p-UeQAtC70czlaemPs",
+            authDomain: "cuentas-claras-b7f45.firebaseapp.com",
+            databaseURL: "https://cuentas-claras-b7f45-default-rtdb.firebaseio.com",
+            projectId: "cuentas-claras-b7f45",
+            storageBucket: "cuentas-claras-b7f45.firebasestorage.app",
+            messagingSenderId: "514246713820",
+            appId: "1:514246713820:web:5f7c5fa548c0601c176f19",
+            measurementId: "G-6Z34VW4D9T"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // ESTADO DE LA APLICACIÓN
+        let appState = {
+            settings: { p1: { name: 'Dougleisy', target: 200 }, p2: { name: 'Frederick', target: 300 } },
+            transactions: []
+        };
+        
+        let currentTab = 'all';
+        let currentRates = { bcv: 0, paralelo: 0 };
+        let transactionToDelete = null;
+        let selectedMonth = new Date().toISOString().slice(0, 7); 
+        
+        // Checklist predefinida (Los montos de la imagen)
+        const defaultFixedExpenses = [
+            { id: 'f1', name: 'Colegio', amount: 48, category: 'Fijo' },
+            { id: 'f2', name: 'Niñera', amount: 85, category: 'Fijo' },
+            { id: 'f3', name: 'Estacionamiento', amount: 15, category: 'Fijo' },
+            { id: 'f4', name: 'Internet', amount: 22, category: 'Fijo' },
+            { id: 'f5', name: 'Mercado mensual', amount: 280, category: 'Mercado' },
+            { id: 'f6', name: 'Condominio', amount: 10, category: 'Fijo' },
+            { id: 'f7', name: 'Gasolina', amount: 5, category: 'Otro' },
+            { id: 'f8', name: 'Aseo personal', amount: 25, category: 'Mercado' },
+            { id: 'f9', name: 'Academia castañuelas', amount: 48, category: 'Fijo' }
+        ];
+
+        const CATEGORIES = {
+            expense: [
+                { val: 'Fijo', text: 'Gasto Fijo' }, { val: 'Mercado', text: 'Mercado / Comida' },
+                { val: 'Hogar', text: 'Hogar / Reparaciones' }, { val: 'Salud', text: 'Salud / Farmacia' },
+                { val: 'Ocio', text: 'Ocio / Salidas' }, { val: 'Ahorro', text: 'Ahorro (Guardado)' },
+                { val: 'Otro', text: 'Otro Gasto' }
+            ],
+            income: [
+                { val: 'Salario', text: 'Salario / Nómina' }, { val: 'Bono', text: 'Bonificación' },
+                { val: 'Negocio', text: 'Negocio Propio' }, { val: 'Otro', text: 'Otro Ingreso' }
+            ]
+        };
+
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-login');
+            const err = document.getElementById('login-error');
+            btn.innerText = "Verificando..."; err.classList.add('hidden');
+            try {
+                await signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-password').value);
+            } catch (error) {
+                err.innerText = "Credenciales incorrectas o error de conexión."; err.classList.remove('hidden'); btn.innerText = "Entrar de forma segura";
+            }
+        });
+
+        document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('app-content').style.display = 'flex';
+                document.getElementById('fab-button').classList.remove('hidden');
+                initApp();
+            } else {
+                document.getElementById('login-screen').style.display = 'flex';
+                document.getElementById('app-content').style.display = 'none';
+                document.getElementById('fab-button').classList.add('hidden');
+            }
+        });
+
+        function initApp() {
+            setupEventListeners();
+            document.getElementById('month-selector').value = selectedMonth;
+            updateCategories();
+            fetchRates();
+            setupRealtimeListeners();
+        }
+
+        function setupRealtimeListeners() {
+            setCloudStatus('Conectando...', 'text-yellow-600');
+            
+            // Listener de Configuraciones
+            const settingsRef = doc(db, 'configuracion', 'ajustes');
+            onSnapshot(settingsRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    appState.settings = docSnap.data();
+                    if(!appState.settings.fixedExpenses) appState.settings.fixedExpenses = defaultFixedExpenses;
+                } else {
+                    appState.settings.fixedExpenses = defaultFixedExpenses;
+                    setDoc(settingsRef, appState.settings);
+                }
+                updateUI();
+            });
+
+            // Listener de Transacciones
+            const transactionsRef = collection(db, 'transacciones');
+            onSnapshot(transactionsRef, (snapshot) => {
+                appState.transactions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                updateUI();
+                setCloudStatus('Sincronizado', 'text-emerald-500');
+            }, (error) => {
+                setCloudStatus('Error', 'text-red-500');
+                console.error("Firebase read error:", error);
+            });
+        }
+
+        async function fetchRates() {
+            const bcvEl = document.getElementById('rate-bcv');
+            const binanceEl = document.getElementById('rate-binance');
+            bcvEl.innerText = '...'; binanceEl.innerText = '...';
+
+            try {
+                const resBcv = await fetch('https://ve.dolarapi.com/v1/dolares/oficial');
+                if (resBcv.ok) { const data = await resBcv.json(); currentRates.bcv = data.promedio; bcvEl.innerText = data.promedio.toFixed(2); }
+            } catch (e) { bcvEl.innerText = 'Err'; }
+
+            try {
+                const resPara = await fetch('https://ve.dolarapi.com/v1/dolares/paralelo');
+                if (resPara.ok) { const data = await resPara.json(); currentRates.paralelo = data.promedio; binanceEl.innerText = data.promedio.toFixed(2); }
+            } catch (e) { binanceEl.innerText = 'Err'; }
+            toggleRateInput();
+        }
+
+        function setCloudStatus(text, colorClass) {
+            const txt = document.getElementById('cloud-text');
+            const icon = document.querySelector('#cloud-status i');
+            txt.innerText = text;
+            icon.className = `fa-solid fa-cloud ${colorClass}`;
+        }
+
+        function setupEventListeners() {
+            document.getElementById('btn-open-add').addEventListener('click', openAddModal);
+            document.getElementById('btn-close-add').addEventListener('click', closeAddModal);
+            document.getElementById('btn-settings').addEventListener('click', openSettingsModal);
+            document.getElementById('btn-close-settings').addEventListener('click', closeSettingsModal);
+            document.getElementById('btn-save-settings').addEventListener('click', saveSettings);
+            document.getElementById('btn-refresh-rates').addEventListener('click', fetchRates);
+
+            document.getElementById('expense-form').addEventListener('submit', handleTransactionSubmit);
+            document.querySelectorAll('input[name="trans-type"]').forEach(el => el.addEventListener('change', updateCategories));
+            document.getElementById('exp-currency').addEventListener('change', toggleRateInput);
+            document.getElementById('exp-amount').addEventListener('input', calculateConverted);
+            document.getElementById('exp-rate').addEventListener('input', calculateConverted);
+            document.getElementById('btn-use-bcv').addEventListener('click', () => { document.getElementById('exp-rate').value = currentRates.bcv; calculateConverted(); });
+            document.getElementById('btn-use-usdt').addEventListener('click', () => { document.getElementById('exp-rate').value = currentRates.paralelo; calculateConverted(); });
+
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', (e) => {
+                currentTab = e.target.dataset.tab;
+                document.querySelectorAll('.tab-btn').forEach(b => {
+                    b.classList.remove('text-primary', 'border-primary', 'bg-white', 'shadow-sm');
+                    b.classList.add('text-slate-500', 'border-transparent', 'hover:bg-slate-100');
+                });
+                e.target.classList.add('text-primary', 'border-primary', 'bg-white', 'shadow-sm');
+                e.target.classList.remove('text-slate-500', 'border-transparent', 'hover:bg-slate-100');
+                updateUI();
+            }));
+
+            document.getElementById('btn-cancel-delete').addEventListener('click', closeDeleteModal);
+            document.getElementById('btn-confirm-delete').addEventListener('click', confirmDelete);
+
+            document.getElementById('month-selector').addEventListener('change', (e) => { selectedMonth = e.target.value; updateUI(); });
+            document.getElementById('prev-month').addEventListener('click', () => changeMonth(-1));
+            document.getElementById('next-month').addEventListener('click', () => changeMonth(1));
+        }
+
+        function changeMonth(offset) {
+            const date = new Date(selectedMonth + "-01T12:00:00");
+            date.setMonth(date.getMonth() + offset);
+            selectedMonth = date.toISOString().slice(0, 7);
+            document.getElementById('month-selector').value = selectedMonth;
+            updateUI();
+        }
+
+        function toggleRateInput() {
+            const currency = document.getElementById('exp-currency').value;
+            const container = document.getElementById('rate-container');
+            if (currency === 'VES') { container.classList.remove('hidden'); if(!document.getElementById('exp-rate').value) document.getElementById('exp-rate').value = currentRates.bcv; } 
+            else { container.classList.add('hidden'); }
+            calculateConverted();
+        }
+
+        function calculateConverted() {
+            const curr = document.getElementById('exp-currency').value;
+            const amt = parseFloat(document.getElementById('exp-amount').value) || 0;
+            const rate = parseFloat(document.getElementById('exp-rate').value) || 0;
+            if (curr === 'VES' && rate > 0) document.getElementById('converted-usd').innerText = `$${(amt/rate).toFixed(2)}`;
+            else document.getElementById('converted-usd').innerText = `$${amt.toFixed(2)}`;
+        }
+
+        function updateUI() {
+            const currentMonthTransactions = appState.transactions.filter(t => new Date(t.timestamp).toISOString().slice(0,7) === selectedMonth);
+
+            document.querySelectorAll('.partner1-name').forEach(el => el.innerText = appState.settings.p1.name);
+            document.querySelectorAll('.partner2-name').forEach(el => el.innerText = appState.settings.p2.name);
+            document.querySelectorAll('.partner1-name-display').forEach(el => el.innerText = appState.settings.p1.name);
+            document.querySelectorAll('.partner2-name-display').forEach(el => el.innerText = appState.settings.p2.name);
+
+            const totalTarget = appState.settings.p1.target + appState.settings.p2.target;
+            const p1Percent = totalTarget > 0 ? (appState.settings.p1.target / totalTarget) * 100 : 0;
+            const p2Percent = totalTarget > 0 ? (appState.settings.p2.target / totalTarget) * 100 : 0;
+
+            let p1Shared = 0, p2Shared = 0, p1Ind = 0, p2Ind = 0, p1Inc = 0, p2Inc = 0;
+
+            currentMonthTransactions.forEach(t => {
+                const amt = parseFloat(t.amount);
+                if (t.type === 'expense') {
+                    if (t.scope === 'shared') { t.payer === 'p1' ? p1Shared += amt : p2Shared += amt; } 
+                    else { t.payer === 'p1' ? p1Ind += amt : p2Ind += amt; }
+                } else if (t.type === 'income') {
+                    t.payer === 'p1' ? p1Inc += amt : p2Inc += amt;
+                }
+            });
+
+            const totalShared = p1Shared + p2Shared;
+            document.getElementById('shared-spent').innerText = totalShared.toFixed(2);
+            document.getElementById('shared-target').innerText = totalTarget.toFixed(2);
+            let prog = totalTarget > 0 ? (totalShared / totalTarget) * 100 : 0;
+            document.getElementById('shared-progress').style.width = `${Math.min(prog, 100)}%`;
+
+            document.getElementById('p1-income').innerText = p1Inc.toFixed(2);
+            document.getElementById('p1-shared-paid').innerText = p1Shared.toFixed(2);
+            document.getElementById('p1-ind-paid').innerText = p1Ind.toFixed(2);
+            const p1Avail = p1Inc - p1Shared - p1Ind;
+            document.getElementById('p1-available').innerText = p1Avail.toFixed(2);
+            document.getElementById('p1-available').className = p1Avail < 0 ? 'text-danger' : 'text-indigo-700';
+
+            document.getElementById('p2-income').innerText = p2Inc.toFixed(2);
+            document.getElementById('p2-shared-paid').innerText = p2Shared.toFixed(2);
+            document.getElementById('p2-ind-paid').innerText = p2Ind.toFixed(2);
+            const p2Avail = p2Inc - p2Shared - p2Ind;
+            document.getElementById('p2-available').innerText = p2Avail.toFixed(2);
+            document.getElementById('p2-available').className = p2Avail < 0 ? 'text-danger' : 'text-teal-700';
+
+            calculateSettlement(totalShared, p1Shared, p1Percent);
+            renderFixedExpenses(currentMonthTransactions);
+            renderTransactionsList(currentMonthTransactions);
+        }
+
+        function calculateSettlement(totalShared, p1Paid, p1Percent) {
+            const box = document.getElementById('settlement-box'), okBox = document.getElementById('settlement-ok'), msg = document.getElementById('settlement-text');
+            if (totalShared === 0) { box.classList.add('hidden'); okBox.classList.remove('hidden'); return; }
+            
+            const p1Duty = totalShared * (p1Percent / 100); 
+            const p1Balance = p1Paid - p1Duty; 
+            
+            if (Math.abs(p1Balance) < 0.1) { box.classList.add('hidden'); okBox.classList.remove('hidden'); return; }
+            box.classList.remove('hidden'); okBox.classList.add('hidden');
+
+            if (p1Balance > 0) {
+                msg.innerHTML = `<span class="font-semibold">${appState.settings.p2.name}</span> debe transferir a <span class="font-semibold">${appState.settings.p1.name}</span>:<br/><span class="text-xl font-black text-orange-600 block mt-1">$${Math.abs(p1Balance).toFixed(2)}</span>`;
+            } else {
+                msg.innerHTML = `<span class="font-semibold">${appState.settings.p1.name}</span> debe transferir a <span class="font-semibold">${appState.settings.p2.name}</span>:<br/><span class="text-xl font-black text-orange-600 block mt-1">$${Math.abs(p1Balance).toFixed(2)}</span>`;
+            }
+        }
+
+        function renderFixedExpenses(monthTrans) {
+            const grid = document.getElementById('fixed-expenses-grid');
+            const fixed = appState.settings.fixedExpenses;
+            grid.innerHTML = '';
+            let paidCount = 0;
+
+            fixed.forEach(item => {
+                const isPaid = monthTrans.find(t => t.type === 'expense' && t.scope === 'shared' && t.desc.toLowerCase() === item.name.toLowerCase());
+                if (isPaid) paidCount++;
+
+                const el = document.createElement('div');
+                if (isPaid) {
+                    const payer = isPaid.payer === 'p1' ? appState.settings.p1.name : appState.settings.p2.name;
+                    el.className = 'border border-emerald-200 bg-emerald-50 rounded-xl p-3 flex items-center justify-between opacity-75 shadow-sm';
+                    el.innerHTML = `<div class="flex items-center gap-3"><i class="fa-solid fa-circle-check text-emerald-500 text-xl"></i><div><p class="text-sm font-bold text-slate-500 line-through">${item.name}</p><p class="text-[10px] uppercase text-emerald-600 font-bold mt-0.5">X ${payer}</p></div></div><div class="font-black text-slate-400 text-sm">$${item.amount}</div>`;
+                } else {
+                    el.className = 'border border-slate-200 bg-white rounded-xl p-3 flex items-center justify-between shadow-sm cursor-pointer hover:border-primary transition-all';
+                    el.onclick = () => { openAddModal(); document.getElementById('exp-desc').value = item.name; document.getElementById('exp-amount').value = item.amount; document.getElementById('exp-currency').value = 'USD'; document.querySelector('input[value="expense"]').checked = true; updateCategories(); document.querySelector('input[value="shared"]').checked = true; document.getElementById('exp-category').value = item.category; toggleRateInput(); };
+                    el.innerHTML = `<div class="flex items-center gap-3"><i class="fa-regular fa-circle text-slate-300 text-xl"></i><div><p class="text-sm font-bold text-dark">${item.name}</p><p class="text-xs text-slate-500 mt-0.5">Pendiente</p></div></div><div class="flex items-center gap-2"><span class="font-black text-dark text-sm">$${item.amount}</span><div class="bg-primary text-white w-6 h-6 rounded-full flex items-center justify-center shadow-md"><i class="fa-solid fa-plus text-[10px]"></i></div></div>`;
+                }
+                grid.appendChild(el);
+            });
+            document.getElementById('fixed-progress-text').innerText = `${paidCount} / ${fixed.length} pagados`;
+        }
+
+        function renderTransactionsList(transactions) {
+            const listEl = document.getElementById('expenses-list');
+            listEl.innerHTML = '';
+            
+            const filtered = transactions.filter(t => {
+                if (currentTab === 'all') return true;
+                if (currentTab === 'shared') return t.scope === 'shared' && t.type === 'expense';
+                if (currentTab === 'p1') return t.payer === 'p1' && (t.scope === 'individual' || t.type === 'income');
+                if (currentTab === 'p2') return t.payer === 'p2' && (t.scope === 'individual' || t.type === 'income');
+            }).sort((a,b) => b.timestamp - a.timestamp);
+
+            if (filtered.length === 0) { listEl.innerHTML = `<div class="p-8 text-center text-slate-400">No hay movimientos.</div>`; return; }
+
+            filtered.forEach(t => {
+                const dateStr = new Date(t.timestamp).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
+                const payerName = t.payer === 'p1' ? appState.settings.p1.name : appState.settings.p2.name;
+                const isIncome = t.type === 'income';
+                
+                const el = document.createElement('div');
+                el.className = 'px-5 py-4 flex justify-between items-center hover:bg-slate-50 transition group';
+                el.innerHTML = `
+                    <div class="flex flex-1">
+                        <div>
+                            <p class="font-bold text-dark text-sm">${t.desc} ${!isIncome ? (t.scope === 'shared' ? '<span class="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded border border-slate-200 ml-2">Pareja</span>' : '<span class="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded border border-slate-200 ml-2">Personal</span>') : ''}</p>
+                            <p class="text-xs mt-1 text-slate-500">${dateStr} • <span class="font-bold ${t.payer === 'p1' ? 'text-indigo-600' : 'text-teal-600'}">${isIncome ? 'Ingresó' : 'Pagó'} ${payerName}</span></p>
+                        </div>
+                    </div>
+                    <div class="text-right ml-4 flex flex-col items-end">
+                        <p class="font-black ${isIncome ? 'text-emerald-600' : 'text-slate-800'} text-lg">${isIncome ? '+' : '-'}$${parseFloat(t.amount).toFixed(2)}</p>
+                        ${t.originalCurrency === 'VES' ? `<p class="text-[10px] text-slate-400 mt-0.5">Bs. ${t.originalAmount.toFixed(2)}</p>` : ''}
+                        <div class="flex gap-2 mt-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100">
+                            <button onclick="editTransaction('${t.id}')" class="text-slate-400 hover:text-primary text-xs bg-white border border-slate-200 px-2 py-1 rounded shadow-sm"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="requestDelete('${t.id}')" class="text-slate-400 hover:text-danger text-xs bg-white border border-slate-200 px-2 py-1 rounded shadow-sm"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                `;
+                listEl.appendChild(el);
+            });
+        }
+
+        function updateCategories() {
+            const type = document.querySelector('input[name="trans-type"]:checked').value;
+            const sel = document.getElementById('exp-category');
+            sel.innerHTML = '';
+            CATEGORIES[type].forEach(c => { const o = document.createElement('option'); o.value = c.val; o.innerText = c.text; sel.appendChild(o); });
+            if (type === 'expense') { document.getElementById('payer-label').innerText = '¿Quién lo pagó?'; document.getElementById('scope-container').classList.remove('hidden'); } 
+            else { document.getElementById('payer-label').innerText = '¿A quién ingresó?'; document.getElementById('scope-container').classList.add('hidden'); document.querySelector('input[value="individual"]').checked = true; }
+        }
+
+        function openAddModal() { document.getElementById('edit-id').value = ''; document.getElementById('expense-form').reset(); document.getElementById('exp-date').value = new Date().toISOString().split('T')[0]; updateCategories(); toggleRateInput(); document.getElementById('add-modal').classList.remove('hidden'); }
+        function closeAddModal() { document.getElementById('add-modal').classList.add('hidden'); }
+
+        window.editTransaction = function(id) {
+            const t = appState.transactions.find(x => x.id === id); if(!t) return;
+            document.getElementById('edit-id').value = t.id;
+            document.querySelector(`input[value="${t.type}"]`).checked = true; updateCategories();
+            document.querySelector(`input[name="exp-scope"][value="${t.scope}"]`).checked = true;
+            document.getElementById('exp-date').value = new Date(t.timestamp).toISOString().split('T')[0];
+            document.getElementById('exp-desc').value = t.desc; document.getElementById('exp-currency').value = t.originalCurrency || 'USD'; document.getElementById('exp-amount').value = t.originalAmount || t.amount;
+            if(t.originalCurrency === 'VES') document.getElementById('exp-rate').value = t.exchangeRate;
+            document.getElementById('exp-category').value = t.category; document.querySelector(`input[value="${t.payer}"]`).checked = true;
+            toggleRateInput(); document.getElementById('add-modal').classList.remove('hidden');
+        }
+
+        async function handleTransactionSubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit-id').value;
+            const rawAmount = parseFloat(document.getElementById('exp-amount').value);
+            const currency = document.getElementById('exp-currency').value;
+            const rate = parseFloat(document.getElementById('exp-rate').value);
+            let finalUsd = rawAmount, appliedRate = null;
+            
+            if (currency === 'VES') { if (!rate || rate <= 0) return showToast('Ingresa una tasa válida', 'error'); finalUsd = rawAmount / rate; appliedRate = rate; }
+            const parts = document.getElementById('exp-date').value.split('-');
+
+            const data = {
+                type: document.querySelector('input[name="trans-type"]:checked').value,
+                scope: document.querySelector('input[name="trans-type"]:checked').value === 'income' ? 'individual' : document.querySelector('input[name="exp-scope"]:checked').value,
+                desc: document.getElementById('exp-desc').value, amount: finalUsd, originalAmount: rawAmount, originalCurrency: currency, exchangeRate: appliedRate,
+                category: document.getElementById('exp-category').value, payer: document.querySelector('input[name="exp-payer"]:checked').value,
+                timestamp: new Date(parts[0], parts[1]-1, parts[2], 12,0,0).getTime()
+            };
+
+            setCloudStatus('Guardando...', 'text-yellow-500');
+            try { await setDoc(doc(db, 'transacciones', id || 'trans_'+Date.now()), data); closeAddModal(); showToast('Guardado con éxito'); } 
+            catch(e) { console.error(e); showToast('Error al guardar', 'error'); setCloudStatus('Error', 'text-red-500'); }
+        }
+
+        window.requestDelete = function(id) { transactionToDelete = id; document.getElementById('confirm-modal').classList.remove('hidden'); }
+        function closeDeleteModal() { transactionToDelete = null; document.getElementById('confirm-modal').classList.add('hidden'); }
+        async function confirmDelete() {
+            setCloudStatus('Borrando...', 'text-yellow-500');
+            try { await deleteDoc(doc(db, 'transacciones', transactionToDelete)); closeDeleteModal(); showToast('Eliminado'); } 
+            catch(e) { showToast('Error al eliminar', 'error'); setCloudStatus('Error', 'text-red-500'); }
+        }
+
+        function openSettingsModal() { document.getElementById('set-p1-name').value = appState.settings.p1.name; document.getElementById('set-p1-amount').value = appState.settings.p1.target; document.getElementById('set-p2-name').value = appState.settings.p2.name; document.getElementById('set-p2-amount').value = appState.settings.p2.target; document.getElementById('settings-modal').classList.remove('hidden'); }
+        function closeSettingsModal() { document.getElementById('settings-modal').classList.add('hidden'); }
+        async function saveSettings() {
+            appState.settings.p1.name = document.getElementById('set-p1-name').value; appState.settings.p1.target = parseFloat(document.getElementById('set-p1-amount').value);
+            appState.settings.p2.name = document.getElementById('set-p2-name').value; appState.settings.p2.target = parseFloat(document.getElementById('set-p2-amount').value);
+            try { await setDoc(doc(db, 'configuracion', 'ajustes'), appState.settings); closeSettingsModal(); showToast('Configuración guardada'); } catch(e) {}
+        }
+
+        function showToast(msg, type='success') {
+            const div = document.createElement('div');
+            div.className = `${type === 'success' ? 'bg-emerald-500' : 'bg-danger'} text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 transform transition-all translate-x-full opacity-0`;
+            div.innerHTML = `<i class="fa-solid ${type==='success'?'fa-check':'fa-xmark'}"></i><span class="text-sm font-medium">${msg}</span>`;
+            document.getElementById('toast-container').appendChild(div);
+            requestAnimationFrame(() => div.classList.remove('translate-x-full', 'opacity-0'));
+            setTimeout(() => { div.classList.add('translate-x-full', 'opacity-0'); setTimeout(()=>div.remove(), 300); }, 3000);
+        }
+    </script>
+</body>
+</html>
