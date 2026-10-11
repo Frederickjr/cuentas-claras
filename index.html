@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cuentas Claras - Control de Gastos en Pareja</title>
+    
+    <!-- Configuración para App Instalable (PWA) -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3135/3135715.png">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
@@ -288,9 +296,9 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // ESTADO DE LA APLICACIÓN
+        // ESTADO DE LA APLICACIÓN (Actualizado con los nuevos montos predeterminados)
         let appState = {
-            settings: { p1: { name: 'Dougleisy', target: 200 }, p2: { name: 'Frederick', target: 300 } },
+            settings: { p1: { name: 'Dougleisy', target: 202 }, p2: { name: 'Frederick', target: 337 } },
             transactions: []
         };
         
@@ -673,6 +681,15 @@
             document.getElementById('toast-container').appendChild(div);
             requestAnimationFrame(() => div.classList.remove('translate-x-full', 'opacity-0'));
             setTimeout(() => { div.classList.add('translate-x-full', 'opacity-0'); setTimeout(()=>div.remove(), 300); }, 3000);
+        }
+
+        // Registro del Service Worker para hacer la App Instalable (PWA)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                .then(reg => console.log('Service Worker registrado para instalación'))
+                .catch(err => console.log('Error registrando Service Worker', err));
+            });
         }
     </script>
 </body>
