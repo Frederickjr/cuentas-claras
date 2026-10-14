@@ -552,29 +552,122 @@
             let paidCount = 0;
 
             fixed.forEach(item => {
-                const isPaid = monthTrans.find(t => t.type === 'expense' && t.scope === 'shared' && t.desc.toLowerCase() === item.name.toLowerCase());
-                if (isPaid) paidCount++;
+                // Filtrar todos los pagos (abonos) hechos a este gasto fijo en el mes
+                const relatedTrans = monthTrans.filter(t => t.type === 'expense' && t.scope === 'shared' && t.desc.toLowerCase() === item.name.toLowerCase());
+                
+                // Sumar el total abonado
+                const sumPaid = relatedTrans.reduce((acc, t) => acc + (parseFloat(t.amount) || 0), 0);
+                
+                // Verificar si se completó (por llegar al monto meta o por darle al botón "Cerrar")
+                const isManuallyCompleted = relatedTrans.some(t => t.isCompletionMarker);
+                const isFullyPaid = sumPaid >= item.amount || isManuallyCompleted;
+
+                if (isFullyPaid) paidCount++;
 
                 const el = document.createElement('div');
-                if (isPaid) {
-                    const payer = isPaid.payer === 'p1' ? appState.settings.p1.name : appState.settings.p2.name;
-                    el.className = 'border border-emerald-200 bg-emerald-50 rounded-xl p-3 flex items-center justify-between opacity-75 shadow-sm';
-                    el.innerHTML = `<div class="flex items-center gap-3"><i class="fa-solid fa-circle-check text-emerald-500 text-xl"></i><div><p class="text-sm font-bold text-slate-500 line-through">${item.name}</p><p class="text-[10px] uppercase text-emerald-600 font-bold mt-0.5">X ${payer}</p></div></div><div class="font-black text-slate-400 text-sm">$${item.amount}</div>`;
+                if (isFullyPaid) {
+                    el.className = 'border border-emerald-200 bg-emerald-50 rounded-xl p-3 flex flex-col gap-2 opacity-75 shadow-sm';
+                    el.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <i class="fa-solid fa-circle-check text-emerald-500 text-xl"></i>
+                                <div>
+                                    <p class="text-sm font-bold text-slate-500 line-through">${item.name}</p>
+                                    <p class="text-[10px] uppercase text-emerald-600 font-bold mt-0.5">Completado</p>
+                                </div>
+                            </div>
+                            <div class="font-black text-slate-400 text-sm">$${sumPaid.toFixed(2)} <span class="text-[10px] font-normal">/ $${item.amount}</span></div>
+                        </div>
+                    `;
                 } else {
-                    el.className = 'border border-slate-200 bg-white rounded-xl p-3 flex items-center justify-between shadow-sm cursor-pointer hover:border-primary transition-all';
-                    el.onclick = () => { openAddModal(); document.getElementById('exp-desc').value = item.name; document.getElementById('exp-amount').value = item.amount; document.getElementById('exp-currency').value = 'USD'; document.querySelector('input[value="expense"]').checked = true; updateCategories(); document.querySelector('input[value="shared"]').checked = true; document.getElementById('exp-category').value = item.category; toggleRateInput(); };
-                    el.innerHTML = `<div class="flex items-center gap-3"><i class="fa-regular fa-circle text-slate-300 text-xl"></i><div><p class="text-sm font-bold text-dark">${item.name}</p><p class="text-xs text-slate-500 mt-0.5">Pendiente</p></div></div><div class="flex items-center gap-2"><span class="font-black text-dark text-sm">$${item.amount}</span><div class="bg-primary text-white w-6 h-6 rounded-full flex items-center justify-center shadow-md"><i class="fa-solid fa-plus text-[10px]"></i></div></div>`;
+                    const percent = Math.min((sumPaid / item.amount) * 100, 100);
+                    const remaining = Math.max(item.amount - sumPaid, 0).toFixed(2);
+
+                    el.className = 'border border-slate-200 bg-white rounded-xl p-3 flex flex-col gap-2 shadow-sm transition-all hover:border-primary/50';
+                    el.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <i class="fa-regular fa-circle text-slate-300 text-xl"></i>
+                                <div>
+                                    <p class="text-sm font-bold text-dark">${item.name}</p>
+                                    <p class="text-[10px] text-slate-500 mt-0.5">En progreso</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <span class="font-black text-dark text-sm">$${sumPaid.toFixed(2)}</span>
+                                <span class="text-[10px] text-slate-500 block">de $${item.amount}</span>
+                            </div>
+                        </div>
+                        <!-- Barra de progreso -->
+                        <div class="w-full bg-slate-100 rounded-full h-1.5 mt-1">
+                            <div class="bg-primary h-1.5 rounded-full transition-all duration-500" style="width: ${percent}%"></div>
+                        </div>
+                        <!-- Botones de Acción -->
+                        <div class="flex justify-between items-center mt-2 pt-2 border-t border-slate-50">
+                            <button class="btn-mark-complete text-[11px] font-medium text-slate-400 hover:text-emerald-500 flex items-center gap-1 transition p-1" data-name="${item.name}">
+                                <i class="fa-solid fa-check"></i> Cerrar
+                            </button>
+                            <button class="btn-add-payment bg-primary hover:bg-indigo-600 text-white text-xs px-3 py-1.5 rounded-lg flex items-center gap-1 shadow-sm transition" data-name="${item.name}" data-remaining="${remaining}" data-category="${item.category}">
+                                <i class="fa-solid fa-plus"></i> Abono
+                            </button>
+                        </div>
+                    `;
                 }
                 grid.appendChild(el);
             });
-            document.getElementById('fixed-progress-text').innerText = `${paidCount} / ${fixed.length} pagados`;
+            
+            document.getElementById('fixed-progress-text').innerText = `${paidCount} / ${fixed.length} completados`;
+
+            // Asignar eventos a los botones de "Abono"
+            document.querySelectorAll('.btn-add-payment').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    openAddModal();
+                    document.getElementById('exp-desc').value = btn.dataset.name;
+                    document.getElementById('exp-amount').value = btn.dataset.remaining; // Te sugiere pagar lo que falta
+                    document.getElementById('exp-currency').value = 'USD';
+                    document.querySelector('input[value="expense"]').checked = true;
+                    updateCategories();
+                    document.querySelector('input[value="shared"]').checked = true;
+                    document.getElementById('exp-category').value = btn.dataset.category;
+                    toggleRateInput();
+                });
+            });
+
+            // Asignar eventos al botón de "Cerrar" manual
+            document.querySelectorAll('.btn-mark-complete').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    markFixedAsComplete(btn.dataset.name);
+                });
+            });
         }
+
+        // Función que guarda una "marca invisible" para saber que cerraste el gasto aunque no hayas llegado al 100%
+        window.markFixedAsComplete = async function(name) {
+            const docId = 'trans_' + Date.now();
+            const parts = document.getElementById('month-selector').value.split('-');
+            const data = {
+                type: 'expense', scope: 'shared', desc: name,
+                amount: 0, originalAmount: 0, originalCurrency: 'USD', exchangeRate: null,
+                category: 'Otro', payer: 'p1',
+                timestamp: new Date(parts[0], parts[1]-1, 15, 12,0,0).getTime(), 
+                isCompletionMarker: true // Esta bandera oculta la transacción del historial pero cierra el gasto
+            };
+            setCloudStatus('Cerrando...', 'text-yellow-500');
+            try { 
+                await setDoc(doc(db, 'transacciones', docId), data); 
+                showToast('Gasto cerrado por este mes'); 
+            } catch(e) { 
+                showToast('Error al cerrar gasto', 'error'); 
+            }
+        };
 
         function renderTransactionsList(transactions) {
             const listEl = document.getElementById('expenses-list');
             listEl.innerHTML = '';
             
             const filtered = transactions.filter(t => {
+                if (t.isCompletionMarker) return false; // Ocultamos las marcas de cierre para no ensuciar tu historial
+                
                 if (currentTab === 'all') return true;
                 if (currentTab === 'shared') return t.scope === 'shared' && t.type === 'expense';
                 if (currentTab === 'p1') return t.payer === 'p1' && (t.scope === 'individual' || t.type === 'income');
