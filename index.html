@@ -552,13 +552,34 @@
             let paidCount = 0;
 
             fixed.forEach(item => {
-                // Filtrar todos los pagos (abonos) hechos a este gasto fijo en el mes
-                const relatedTrans = monthTrans.filter(t => t.type === 'expense' && t.scope === 'shared' && t.desc.toLowerCase() === item.name.toLowerCase());
+                // LÓGICA INTELIGENTE DE VINCULACIÓN (Por Categoría y Descripción)
+                const relatedTrans = monthTrans.filter(t => {
+                    // Ignorar si no es un gasto compartido
+                    if (t.type !== 'expense' || t.scope !== 'shared') return false;
+                    if (t.isCompletionMarker && t.desc === item.name) return true;
+                    
+                    const tDesc = t.desc.toLowerCase().trim();
+                    const iName = item.name.toLowerCase().trim();
+                    const tCat = t.category;
+
+                    // 1. Exacto o incluido en la descripción (ej. "Pago niñera semana 1" vincula con "Niñera")
+                    if (tDesc.includes(iName)) return true;
+
+                    // 2. Por categoría (Atrapará automáticamente lo que ya tenías registrado)
+                    if (iName === 'mercado mensual' && tCat === 'Mercado') return true;
+                    if (iName === 'niñera' && tCat === 'Niñera') return true;
+                    if (iName === 'internet' && tCat === 'Internet') return true;
+                    if (iName === 'estacionamiento' && tCat === 'Estacionamiento') return true;
+                    if (iName === 'colegio' && tCat === 'Colegio') return true;
+                    if (iName === 'condominio' && tCat === 'Condominio') return true;
+                    if (iName === 'gasolina' && tCat === 'Vehiculo') return true;
+                    if (iName === 'aseo personal' && tCat === 'Aseo') return true;
+
+                    return false;
+                });
                 
-                // Sumar el total abonado
                 const sumPaid = relatedTrans.reduce((acc, t) => acc + (parseFloat(t.amount) || 0), 0);
                 
-                // Verificar si se completó (por llegar al monto meta o por darle al botón "Cerrar")
                 const isManuallyCompleted = relatedTrans.some(t => t.isCompletionMarker);
                 const isFullyPaid = sumPaid >= item.amount || isManuallyCompleted;
 
