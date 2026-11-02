@@ -3,21 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cuentas Claras - Control de Pareja</title>
+    <title>Cuentas Claras - Control de Gastos en Pareja</title>
     
-    <!-- Configuración PWA y Logo -->
-    <link rel="manifest" href="./manifest.json">
-    <link rel="apple-touch-icon" href="./logo.jpg">
+    <!-- Configuración para App Instalable (PWA) -->
+    <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#4f46e5">
-    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="./logo.jpg">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { primary: '#4f46e5', secondary: '#10b981', dark: '#1e293b', light: '#f8fafc', danger: '#ef4444' },
-                    fontFamily: { sans: ['Inter', 'sans-serif'] }
+                    colors: {
+                        primary: '#4f46e5',
+                        secondary: '#10b981',
+                        dark: '#1e293b',
+                        light: '#f8fafc',
+                        danger: '#ef4444'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
                 }
             }
         }
@@ -31,46 +41,44 @@
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         .modal-active { overflow: hidden; }
         .syncing-icon { animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .5; transform: scale(1.1); } }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: .5; transform: scale(1.1); }
+        }
         #app-content { display: none; }
     </style>
 </head>
 <body class="text-slate-800 antialiased h-screen flex flex-col">
 
-    <!-- Pantalla de Inicio de Sesión (Protección) -->
+    <!-- PANTALLA DE LOGIN -->
     <div id="login-screen" class="fixed inset-0 z-[100] bg-slate-900 flex flex-col justify-center items-center p-4">
         <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-sm text-center">
-            <div class="w-20 h-20 mx-auto mb-4 rounded-2xl overflow-hidden shadow-md">
-                <img src="./logo.jpg" alt="Logo" class="w-full h-full object-cover" onerror="this.src='https://ui-avatars.com/api/?name=CC&background=4f46e5&color=fff'">
+            <div class="w-16 h-16 bg-indigo-100 text-primary rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
+                <i class="fa-solid fa-lock"></i>
             </div>
             <h2 class="text-2xl font-bold text-dark mb-2">Cuentas Claras</h2>
             <p class="text-slate-500 text-sm mb-6">Acceso privado para la pareja</p>
             <form id="login-form" class="space-y-4">
-                <input type="email" id="login-email" placeholder="Correo electrónico" class="w-full border border-slate-300 p-3.5 rounded-xl outline-none focus:ring-2 focus:ring-primary" required>
-                <div class="relative">
-                    <input type="password" id="login-password" placeholder="Contraseña" class="w-full border border-slate-300 p-3.5 rounded-xl outline-none focus:ring-2 focus:ring-primary" required>
-                </div>
-                <button type="submit" id="btn-login" class="w-full bg-primary hover:bg-indigo-600 text-white font-bold py-3.5 rounded-xl shadow-lg transition">
-                    Entrar
+                <input type="email" id="login-email" placeholder="Correo electrónico" class="w-full border border-slate-300 p-3.5 rounded-xl outline-none focus:ring-2 focus:ring-primary bg-slate-50" required>
+                <input type="password" id="login-password" placeholder="Contraseña" class="w-full border border-slate-300 p-3.5 rounded-xl outline-none focus:ring-2 focus:ring-primary bg-slate-50" required>
+                <button type="submit" id="btn-login" class="w-full bg-primary hover:bg-indigo-600 text-white font-bold py-3.5 rounded-xl shadow-lg transition transform hover:scale-105">
+                    Entrar de forma segura
                 </button>
             </form>
             <p id="login-error" class="text-danger text-sm mt-4 hidden"></p>
         </div>
     </div>
 
-    <!-- Contenido Principal de la App -->
+    <!-- CONTENIDO PRINCIPAL DE LA APP -->
     <div id="app-content" class="h-full flex flex-col">
-        <!-- Header -->
         <header class="bg-primary text-white shadow-md z-10 relative shrink-0">
             <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-                <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-lg overflow-hidden shadow-sm hidden sm:block">
-                        <img src="./logo.jpg" alt="Logo" class="w-full h-full object-cover" onerror="this.src='https://ui-avatars.com/api/?name=CC&background=fff&color=4f46e5'">
-                    </div>
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-heart-circle-check text-2xl text-pink-300"></i>
                     <h1 class="text-xl font-bold tracking-tight">Cuentas Claras</h1>
                 </div>
-                <div class="flex gap-4 items-center">
-                    <div id="cloud-status" class="flex items-center gap-2 text-xs font-medium bg-indigo-800/50 px-3 py-1.5 rounded-full">
+                <div class="flex gap-3 sm:gap-4 items-center">
+                    <div id="cloud-status" class="hidden sm:flex items-center gap-2 text-xs font-medium bg-indigo-800/50 px-3 py-1.5 rounded-full">
                         <i class="fa-solid fa-cloud text-slate-300"></i><span id="cloud-text">Conectando...</span>
                     </div>
                     <button id="btn-settings" class="hover:bg-indigo-700 p-2 rounded-full transition" title="Configuración"><i class="fa-solid fa-gear"></i></button>
@@ -79,54 +87,43 @@
             </div>
         </header>
 
-        <!-- Aviso de Diagnóstico de Base de Datos -->
-        <div id="db-diagnostic-banner" class="hidden bg-amber-500 text-white text-xs px-4 py-2 text-center font-medium shadow-inner shrink-0">
-            <span id="db-diagnostic-text">Verificando conexión con Firebase...</span>
-        </div>
-
-        <!-- Tasas de Cambio -->
         <div class="bg-dark text-slate-300 text-xs py-2 shadow-inner shrink-0">
-            <div class="max-w-6xl mx-auto px-4 flex justify-between items-center">
-                <div class="flex gap-4">
-                    <span title="Tasa Oficial Banco Central de Venezuela" class="flex items-center gap-1">
-                        <i class="fa-solid fa-building-columns text-yellow-500"></i> BCV: <span id="rate-bcv" class="font-mono font-bold text-white">...</span> Bs
-                    </span>
-                    <span title="Tasa Paralelo (Referencia)" class="flex items-center gap-1">
-                        <i class="fa-brands fa-bitcoin text-yellow-400"></i> Paralelo: <span id="rate-binance" class="font-mono font-bold text-white">...</span> Bs
-                    </span>
+            <div class="max-w-6xl mx-auto px-4 flex justify-between items-center overflow-x-auto">
+                <div class="flex gap-4 min-w-max">
+                    <span class="flex items-center gap-1"><i class="fa-solid fa-building-columns text-yellow-500"></i> BCV: <span id="rate-bcv" class="font-mono font-bold text-white">...</span> Bs</span>
+                    <span class="flex items-center gap-1"><i class="fa-brands fa-bitcoin text-yellow-400"></i> Paralelo: <span id="rate-binance" class="font-mono font-bold text-white">...</span> Bs</span>
                 </div>
-                <button id="btn-refresh-rates" class="text-slate-400 hover:text-white" title="Actualizar Tasas"><i class="fa-solid fa-rotate-right"></i></button>
+                <button id="btn-refresh-rates" class="text-slate-400 hover:text-white shrink-0 ml-4"><i class="fa-solid fa-rotate-right"></i></button>
             </div>
         </div>
 
         <main class="flex-grow overflow-y-auto pb-24">
             <div class="max-w-6xl mx-auto px-4 py-6 space-y-6">
-                <!-- Selector de Mes -->
                 <div class="flex justify-between items-center bg-white p-3 rounded-2xl shadow-sm border border-slate-200">
-                    <h2 class="text-sm font-bold text-slate-500 uppercase tracking-wide ml-2"><i class="fa-regular fa-calendar-days mr-2"></i> Balance del Mes</h2>
-                    <div class="flex items-center gap-2">
+                    <h2 class="text-sm font-bold text-slate-500 uppercase tracking-wide ml-2 hidden sm:block"><i class="fa-regular fa-calendar-days mr-2"></i> Balance del Mes</h2>
+                    <div class="flex items-center gap-2 w-full sm:w-auto justify-center">
                         <button id="prev-month" class="p-2 hover:bg-slate-100 rounded-full text-slate-500 transition"><i class="fa-solid fa-chevron-left"></i></button>
                         <input type="month" id="month-selector" class="border-none bg-slate-50 font-bold text-dark rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-primary outline-none cursor-pointer">
                         <button id="next-month" class="p-2 hover:bg-slate-100 rounded-full text-slate-500 transition"><i class="fa-solid fa-chevron-right"></i></button>
                     </div>
                 </div>
 
-                <!-- 3 Columnas Principales -->
-                <section class="grid grid-cols-1 lg:grid-cols-3 gap-5">
-                    <!-- 1. Gasto Compartido -->
+                <section class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <!-- Gastos Comunes -->
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
                         <div class="p-5 bg-gradient-to-r from-slate-50 to-white border-b border-slate-100 relative overflow-hidden">
-                            <h3 class="text-sm font-bold text-slate-700 mb-1 flex items-center gap-2 uppercase tracking-wide"><i class="fa-solid fa-users text-primary"></i> Gastos Comunes</h3>
-                            <div class="flex justify-between items-end mb-3">
+                            <div class="absolute -right-4 -top-4 opacity-5"><i class="fa-solid fa-users text-8xl"></i></div>
+                            <h3 class="text-sm font-bold text-slate-700 mb-1 flex items-center gap-2 uppercase tracking-wide relative z-10"><i class="fa-solid fa-users text-primary"></i> Gastos Comunes</h3>
+                            <div class="flex justify-between items-end mb-3 relative z-10">
                                 <div class="text-3xl font-bold text-dark">$<span id="shared-spent">0.00</span></div>
-                                <div class="text-sm text-slate-500 font-medium">Meta: $<span id="shared-target">0</span></div>
+                                <div class="text-sm text-slate-500 font-medium">Fondo: $<span id="shared-target">0</span></div>
                             </div>
-                            <div class="w-full bg-slate-200 rounded-full h-2.5 mb-1"><div id="shared-progress" class="bg-primary h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div></div>
+                            <div class="w-full bg-slate-200 rounded-full h-2.5 mb-1 relative z-10"><div id="shared-progress" class="bg-primary h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div></div>
                         </div>
-                        <div class="p-5 flex-grow bg-slate-50/50 flex flex-col justify-center">
+                        <div class="p-5 flex-grow flex flex-col justify-center bg-slate-50/50">
                             <div id="settlement-box" class="bg-orange-50 border border-orange-200 rounded-xl p-4 flex items-start gap-3 hidden">
                                 <i class="fa-solid fa-scale-unbalanced text-orange-500 text-xl mt-1"></i>
-                                <div><h4 class="text-sm font-bold text-orange-800">Ajuste de Cuentas</h4><p id="settlement-text" class="text-sm text-orange-700 mt-1">...</p></div>
+                                <div><h4 class="text-sm font-bold text-orange-800">Ajuste de Cuentas</h4><p id="settlement-text" class="text-sm text-orange-700 mt-1">Calculando...</p></div>
                             </div>
                             <div id="settlement-ok" class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center gap-3">
                                 <i class="fa-solid fa-check-circle text-emerald-500 text-xl"></i><p class="text-sm text-emerald-700 font-medium">Cuentas al día.</p>
@@ -134,61 +131,52 @@
                         </div>
                     </div>
 
-                    <!-- 2. P1 Stats (Dougleisy) -->
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex flex-col">
-                        <h3 class="text-sm font-bold text-indigo-900 uppercase tracking-wide mb-3 partner1-name">Dougleisy</h3>
-                        <div class="space-y-3 text-sm flex-grow">
+                    <!-- Tarjeta P1 -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 relative overflow-hidden flex flex-col">
+                        <div class="absolute -right-4 -top-4 opacity-5"><i class="fa-solid fa-circle-user text-8xl"></i></div>
+                        <h3 class="text-sm font-bold text-indigo-900 uppercase tracking-wide mb-3 partner1-name relative z-10">Dougleisy</h3>
+                        <div class="space-y-3 text-sm relative z-10 flex-grow">
                             <div class="flex justify-between border-b border-slate-50 pb-2"><span>Ingresos:</span><span class="font-bold text-emerald-600">+$<span id="p1-income">0.00</span></span></div>
                             <div class="flex justify-between border-b border-slate-50 pb-2"><span>Aportó a Comunes:</span><span class="font-medium text-slate-800">-$<span id="p1-shared-paid">0.00</span></span></div>
                             <div class="flex justify-between pb-1"><span>Gastos Personales:</span><span class="font-medium text-danger">-$<span id="p1-ind-paid">0.00</span></span></div>
                         </div>
-                        <div class="mt-4 pt-3 border-t border-slate-100 bg-indigo-50/50 -mx-5 -mb-5 p-5 flex justify-between items-center">
-                            <span class="text-xs font-bold text-slate-500 uppercase">Disponible Personal</span><span class="text-2xl font-bold text-indigo-700">$<span id="p1-available">0.00</span></span>
+                        <div class="mt-4 pt-3 border-t border-slate-100 relative z-10 bg-indigo-50/50 -mx-5 -mb-5 p-5">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-bold text-slate-500 uppercase">Disponible Libre</span><span class="text-2xl font-bold text-indigo-700">$<span id="p1-available">0.00</span></span>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- 3. P2 Stats (Frederick) -->
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex flex-col">
-                        <h3 class="text-sm font-bold text-teal-900 uppercase tracking-wide mb-3 partner2-name">Frederick</h3>
-                        <div class="space-y-3 text-sm flex-grow">
+                    <!-- Tarjeta P2 -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 relative overflow-hidden flex flex-col">
+                        <div class="absolute -right-4 -top-4 opacity-5"><i class="fa-regular fa-circle-user text-8xl"></i></div>
+                        <h3 class="text-sm font-bold text-teal-900 uppercase tracking-wide mb-3 partner2-name relative z-10">Frederick</h3>
+                        <div class="space-y-3 text-sm relative z-10 flex-grow">
                             <div class="flex justify-between border-b border-slate-50 pb-2"><span>Ingresos:</span><span class="font-bold text-emerald-600">+$<span id="p2-income">0.00</span></span></div>
                             <div class="flex justify-between border-b border-slate-50 pb-2"><span>Aportó a Comunes:</span><span class="font-medium text-slate-800">-$<span id="p2-shared-paid">0.00</span></span></div>
                             <div class="flex justify-between pb-1"><span>Gastos Personales:</span><span class="font-medium text-danger">-$<span id="p2-ind-paid">0.00</span></span></div>
                         </div>
-                        <div class="mt-4 pt-3 border-t border-slate-100 bg-teal-50/50 -mx-5 -mb-5 p-5 flex justify-between items-center">
-                            <span class="text-xs font-bold text-slate-500 uppercase">Disponible Personal</span><span class="text-2xl font-bold text-teal-700">$<span id="p2-available">0.00</span></span>
+                        <div class="mt-4 pt-3 border-t border-slate-100 relative z-10 bg-teal-50/50 -mx-5 -mb-5 p-5">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-bold text-slate-500 uppercase">Disponible Libre</span><span class="text-2xl font-bold text-teal-700">$<span id="p2-available">0.00</span></span>
+                            </div>
                         </div>
                     </div>
                 </section>
 
-                <!-- Gráficos y Ahorro -->
-                <section class="grid grid-cols-1 lg:grid-cols-3 gap-5">
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 flex flex-col justify-center items-center text-center">
-                        <div class="w-14 h-14 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center text-2xl mb-2"><i class="fa-solid fa-piggy-bank"></i></div>
-                        <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wide">Fondo de Ahorros</h3>
-                        <div class="text-3xl font-black text-emerald-600 mt-1">$<span id="total-savings">0.00</span></div>
-                        <p class="text-[10px] text-slate-400 mt-2 font-medium">Histórico acumulado</p>
-                    </div>
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 lg:col-span-2">
-                        <h3 class="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2 uppercase tracking-wide"><i class="fa-solid fa-chart-pie text-primary"></i> Análisis del Mes</h3>
-                        <div id="category-breakdown" class="space-y-3"></div>
-                    </div>
-                </section>
-
-                <!-- Gastos Fijos (Tracker Inteligente) -->
-                <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+                <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col p-5">
                     <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-base font-bold text-dark flex items-center gap-2"><i class="fa-solid fa-list-check text-primary"></i> Progreso Gastos Fijos</h2>
-                        <span id="fixed-progress-text" class="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-md shadow-inner">0 / 0 completados</span>
+                        <h2 class="text-base font-bold text-dark flex items-center gap-2"><i class="fa-solid fa-list-check text-primary"></i> Checklist Fijos del Mes</h2>
+                        <span id="fixed-progress-text" class="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-md shadow-inner">0 / 0 pagados</span>
                     </div>
-                    <div id="fixed-expenses-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+                    <div id="fixed-expenses-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></div>
                 </section>
 
-                <!-- Historial -->
                 <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
-                    <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                    <div class="px-5 py-4 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-slate-50">
                         <h2 class="text-base font-bold text-dark">Historial de Transacciones</h2>
                     </div>
+                    <!-- Pestañas -->
                     <div class="flex gap-2 p-3 border-b border-slate-100 bg-slate-50/50 overflow-x-auto custom-scrollbar" id="tabs-container">
                         <button class="tab-btn px-4 py-2 rounded-lg text-sm font-bold transition-all text-primary border border-primary bg-white shadow-sm whitespace-nowrap" data-tab="all">Todos</button>
                         <button class="tab-btn px-4 py-2 rounded-lg text-sm font-bold transition-all text-slate-500 hover:bg-slate-100 border border-transparent whitespace-nowrap" data-tab="shared">Comunes</button>
@@ -201,104 +189,98 @@
         </main>
     </div>
 
-    <!-- Botón Flotante y Formularios -->
+    <!-- FAB -->
     <div class="fixed bottom-6 right-6 lg:bottom-10 lg:right-10 z-40 hidden" id="fab-button">
         <button id="btn-open-add" class="bg-primary hover:bg-indigo-600 text-white rounded-full w-14 h-14 shadow-lg flex items-center justify-center text-2xl transition transform hover:scale-105"><i class="fa-solid fa-plus"></i></button>
     </div>
 
-    <!-- Modal Añadir Transacción -->
+    <!-- Modal Formulario Principal -->
     <div id="add-modal" class="fixed inset-0 z-50 hidden bg-slate-900/60 transition-opacity backdrop-blur-sm flex justify-center items-center p-4">
-        <div class="bg-white w-full sm:w-[32rem] max-h-[90vh] flex flex-col rounded-2xl shadow-2xl overflow-hidden">
-            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
-                <h3 class="text-lg font-bold text-dark" id="modal-title">Registrar Movimiento</h3>
+        <div class="bg-white w-full sm:w-[32rem] max-h-[95vh] flex flex-col rounded-2xl shadow-2xl">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 rounded-t-2xl shrink-0">
+                <h3 class="text-lg font-bold text-dark" id="modal-title">Registrar</h3>
                 <button type="button" id="btn-close-add" class="text-slate-400 hover:text-dark transition"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
             <form id="expense-form" class="p-6 space-y-5 overflow-y-auto custom-scrollbar">
                 <input type="hidden" id="edit-id" value="">
-                <input type="hidden" id="linked-fixed-id" value="">
-                
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-1">Tipo</label>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">Tipo de Movimiento</label>
                         <div class="flex bg-slate-100 p-1 rounded-lg">
                             <label class="flex-1 text-center cursor-pointer"><input type="radio" name="trans-type" value="expense" checked class="peer sr-only"><div class="py-2 rounded-md peer-checked:bg-white peer-checked:shadow peer-checked:text-danger font-bold text-sm text-slate-500">Gasto</div></label>
                             <label class="flex-1 text-center cursor-pointer"><input type="radio" name="trans-type" value="income" class="peer sr-only"><div class="py-2 rounded-md peer-checked:bg-white peer-checked:shadow peer-checked:text-emerald-600 font-bold text-sm text-slate-500">Ingreso</div></label>
                         </div>
                     </div>
-                    <div><label class="block text-sm font-semibold text-slate-700 mb-1">Fecha (Día del Movimiento)</label><input type="date" id="exp-date" required class="w-full border border-slate-300 rounded-lg px-3 py-2.5"></div>
+                    <div><label class="block text-sm font-semibold text-slate-700 mb-1">Fecha</label><input type="date" id="exp-date" required class="w-full border border-slate-300 rounded-lg px-3 py-2.5"></div>
                 </div>
-                
                 <div id="scope-container">
-                    <label class="block text-sm font-semibold text-slate-700 mb-1">¿A quién afecta?</label>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">¿A quién afecta este gasto?</label>
                     <div class="flex bg-slate-100 p-1 rounded-lg">
-                        <label class="flex-1 text-center cursor-pointer"><input type="radio" name="exp-scope" value="shared" checked class="peer sr-only"><div class="py-2 rounded-md peer-checked:bg-white peer-checked:shadow peer-checked:text-primary font-bold text-sm text-slate-500"><i class="fa-solid fa-users mr-1"></i> Común</div></label>
+                        <label class="flex-1 text-center cursor-pointer"><input type="radio" name="exp-scope" value="shared" checked class="peer sr-only"><div class="py-2 rounded-md peer-checked:bg-white peer-checked:shadow peer-checked:text-primary font-bold text-sm text-slate-500"><i class="fa-solid fa-users mr-1"></i> Pareja</div></label>
                         <label class="flex-1 text-center cursor-pointer"><input type="radio" name="exp-scope" value="individual" class="peer sr-only"><div class="py-2 rounded-md peer-checked:bg-white peer-checked:shadow peer-checked:text-slate-800 font-bold text-sm text-slate-500"><i class="fa-solid fa-user mr-1"></i> Personal</div></label>
                     </div>
                 </div>
-                
-                <div><label class="block text-sm font-semibold text-slate-700 mb-1">Descripción</label><input type="text" id="exp-desc" required placeholder="Ej. Mercado Semanal, Niñera" class="w-full border border-slate-300 rounded-lg px-3 py-2.5"></div>
-                
+                <div><label class="block text-sm font-semibold text-slate-700 mb-1">Descripción</label><input type="text" id="exp-desc" required placeholder="Ej. Colegio, Quincena, Cena" class="w-full border border-slate-300 rounded-lg px-3 py-2.5"></div>
                 <div class="grid grid-cols-12 gap-3">
-                    <div class="col-span-4"><label class="block text-sm font-semibold text-slate-700 mb-1">Moneda</label><select id="exp-currency" class="w-full border border-slate-300 rounded-lg px-2 py-2.5"><option value="USD">USD ($)</option><option value="VES">VES (Bs)</option></select></div>
-                    <div class="col-span-8"><label class="block text-sm font-semibold text-slate-700 mb-1">Monto</label><input type="number" id="exp-amount" required step="0.01" min="0.01" placeholder="0.00" class="w-full border border-slate-300 rounded-lg px-3 py-2.5 font-bold text-lg"></div>
-                    
+                    <div class="col-span-5"><label class="block text-sm font-semibold text-slate-700 mb-1">Moneda</label><select id="exp-currency" class="w-full border border-slate-300 rounded-lg px-2 py-2.5 font-bold"><option value="USD">USD ($)</option><option value="VES">VES (Bs)</option></select></div>
+                    <div class="col-span-7"><label class="block text-sm font-semibold text-slate-700 mb-1">Monto</label><input type="number" id="exp-amount" required step="0.01" min="0.01" placeholder="0.00" class="w-full border border-slate-300 rounded-lg px-3 py-2.5 font-bold text-lg"></div>
                     <div id="rate-container" class="col-span-12 hidden bg-slate-50 p-3 rounded-lg border border-slate-200">
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">Tasa de Cambio (Bs por $)</label>
-                        <div class="flex gap-2"><input type="number" id="exp-rate" step="0.01" class="w-1/2 border border-slate-300 rounded-lg px-3 py-2"><button type="button" id="btn-use-bcv" class="text-xs bg-blue-100 text-blue-700 px-3 py-2 rounded font-bold">Usar BCV</button></div>
-                        <div class="text-right text-xs mt-2 text-slate-500">Se guardará como: <span id="converted-usd" class="font-bold text-emerald-600 text-base">$0.00</span></div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Tasa Usada (Bs por $)</label>
+                        <div class="flex flex-col sm:flex-row gap-2"><input type="number" id="exp-rate" step="0.01" class="w-full sm:w-1/2 border border-slate-300 rounded-lg px-3 py-2 font-mono"><div class="flex gap-2"><button type="button" id="btn-use-bcv" class="text-xs bg-blue-100 text-blue-700 px-3 py-2 rounded font-bold">Usar BCV</button><button type="button" id="btn-use-usdt" class="text-xs bg-yellow-100 text-yellow-700 px-3 py-2 rounded font-bold">Usar Paralelo</button></div></div>
+                        <div class="text-right text-xs mt-2 text-slate-500">Se guardará contablemente como: <span id="converted-usd" class="font-bold text-emerald-600 text-base">$0.00</span></div>
                     </div>
-                    
-                    <div class="col-span-12"><label class="block text-sm font-semibold text-slate-700 mb-1">Categoría</label><select id="exp-category" class="w-full border border-slate-300 rounded-lg px-3 py-2.5"></select></div>
+                    <div class="col-span-12"><label class="block text-sm font-semibold text-slate-700 mb-1">Categoría</label><select id="exp-category" class="w-full border border-slate-300 rounded-lg px-3 py-2.5 bg-white"></select></div>
                 </div>
-                
                 <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-1" id="payer-label">¿Quién pagó/recibió?</label>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1" id="payer-label">¿Quién paga / Quién recibe?</label>
                     <div class="flex bg-slate-100 p-1 rounded-lg">
                         <label class="flex-1 text-center cursor-pointer"><input type="radio" name="exp-payer" value="p1" checked class="peer sr-only"><div class="py-2 rounded-md peer-checked:bg-white peer-checked:shadow peer-checked:text-indigo-600 font-bold text-sm text-slate-500 partner1-name-display">P1</div></label>
                         <label class="flex-1 text-center cursor-pointer"><input type="radio" name="exp-payer" value="p2" class="peer sr-only"><div class="py-2 rounded-md peer-checked:bg-white peer-checked:shadow peer-checked:text-teal-600 font-bold text-sm text-slate-500 partner2-name-display">P2</div></label>
                     </div>
                 </div>
-                
                 <div class="pt-4 pb-2"><button type="submit" class="w-full bg-dark hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl shadow-lg transition"><i class="fa-solid fa-cloud-arrow-up mr-2"></i> Guardar en la Nube</button></div>
             </form>
         </div>
     </div>
 
-    <!-- Modales Auxiliares -->
+    <!-- Modal Ajustes -->
     <div id="settings-modal" class="fixed inset-0 z-50 hidden bg-slate-900/60 transition-opacity backdrop-blur-sm flex justify-center items-center p-4">
         <div class="bg-white w-full max-w-md rounded-2xl shadow-xl overflow-hidden p-6">
-            <h3 class="text-lg font-bold mb-4">Configuración de Metas</h3>
-            <div class="space-y-3">
-                <div class="flex gap-2 items-center"><span class="w-8 text-indigo-600 font-bold">P1:</span><input type="text" id="set-p1-name" class="border p-2 rounded-lg w-1/2" placeholder="Nombre"><input type="number" id="set-p1-amount" class="border p-2 rounded-lg w-1/2" placeholder="Meta $"></div>
-                <div class="flex gap-2 items-center"><span class="w-8 text-teal-600 font-bold">P2:</span><input type="text" id="set-p2-name" class="border p-2 rounded-lg w-1/2" placeholder="Nombre"><input type="number" id="set-p2-amount" class="border p-2 rounded-lg w-1/2" placeholder="Meta $"></div>
+            <h3 class="text-lg font-bold mb-4 text-dark"><i class="fa-solid fa-gear mr-2"></i> Configuración de Presupuesto</h3>
+            <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100 mb-4">
+                <p class="text-xs text-indigo-800 mb-3 font-medium">Define los aportes acordados para los gastos de pareja. Esto sirve para calcular si alguien debe dinero para equilibrar.</p>
+                <div class="space-y-3">
+                    <div class="flex gap-2"><input type="text" id="set-p1-name" class="border border-slate-300 p-2.5 rounded-lg w-1/2 font-medium" placeholder="Nombre Pareja 1"><input type="number" id="set-p1-amount" class="border border-slate-300 p-2.5 rounded-lg w-1/2 font-bold" placeholder="Aporte $"></div>
+                    <div class="flex gap-2"><input type="text" id="set-p2-name" class="border border-slate-300 p-2.5 rounded-lg w-1/2 font-medium" placeholder="Nombre Pareja 2"><input type="number" id="set-p2-amount" class="border border-slate-300 p-2.5 rounded-lg w-1/2 font-bold" placeholder="Aporte $"></div>
+                </div>
             </div>
-            <button id="btn-save-settings" class="w-full bg-dark text-white p-3 rounded-xl mt-6 font-bold hover:bg-slate-800">Guardar Cambios</button>
-            <button id="btn-close-settings" class="w-full bg-slate-100 text-slate-700 p-3 rounded-xl mt-2 font-bold hover:bg-slate-200">Cerrar</button>
+            <div class="flex gap-2">
+                <button id="btn-close-settings" class="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 rounded-xl font-bold transition">Cerrar</button>
+                <button id="btn-save-settings" class="w-2/3 bg-dark hover:bg-slate-800 text-white py-3 rounded-xl font-bold shadow transition">Guardar Cambios</button>
+            </div>
         </div>
     </div>
-    
+
+    <!-- Modal Borrar -->
     <div id="confirm-modal" class="fixed inset-0 z-[60] hidden bg-slate-900/60 flex justify-center items-center p-4">
-        <div class="bg-white rounded-2xl p-6 text-center max-w-sm">
-            <h3 class="text-lg font-bold mb-4">¿Eliminar Registro?</h3>
+        <div class="bg-white rounded-2xl p-6 text-center max-w-sm w-full">
+            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-danger text-3xl"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <h3 class="text-lg font-bold mb-2">¿Eliminar Registro?</h3>
+            <p class="text-sm text-slate-500 mb-6">Esta acción borrará este registro de la base de datos permanentemente.</p>
             <div class="flex gap-3">
-                <button id="btn-cancel-delete" class="flex-1 bg-slate-100 p-2.5 rounded-xl font-bold">Cancelar</button>
-                <button id="btn-confirm-delete" class="flex-1 bg-danger text-white p-2.5 rounded-xl font-bold">Sí, eliminar</button>
+                <button id="btn-cancel-delete" class="flex-1 bg-slate-100 p-2.5 rounded-xl font-bold text-slate-700 hover:bg-slate-200">Cancelar</button>
+                <button id="btn-confirm-delete" class="flex-1 bg-danger hover:bg-red-600 text-white p-2.5 rounded-xl font-bold">Sí, eliminar</button>
             </div>
         </div>
     </div>
-    
     <div id="toast-container" class="fixed top-4 right-4 z-[70] flex flex-col gap-2"></div>
 
-    <!-- LÓGICA Y FIREBASE (COMPLETO Y CORREGIDO) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection, collectionGroup } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { getDatabase, ref as rtdbRef, onValue } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+        import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // =========================================================================================
-        // TU CONFIGURACIÓN DE FIREBASE EXACTA
-        // =========================================================================================
+        // CONFIGURACIÓN REAL PROPORCIONADA POR EL USUARIO
         const firebaseConfig = {
             apiKey: "AIzaSyBMv-bgP2BuaO7d1p-UeQAtC70czlaemPs",
             authDomain: "cuentas-claras-b7f45.firebaseapp.com",
@@ -309,14 +291,12 @@
             appId: "1:514246713820:web:5f7c5fa548c0601c176f19",
             measurementId: "G-6Z34VW4D9T"
         };
-        // =========================================================================================
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const rtdb = getDatabase(app);
         const auth = getAuth(app);
 
-        // ESTADO GLOBAL DE LA APP
+        // ESTADO DE LA APLICACIÓN (Actualizado con los nuevos montos predeterminados)
         let appState = {
             settings: { p1: { name: 'Dougleisy', target: 202 }, p2: { name: 'Frederick', target: 337 } },
             transactions: []
@@ -325,43 +305,43 @@
         let currentTab = 'all';
         let currentRates = { bcv: 0, paralelo: 0 };
         let transactionToDelete = null;
+        let selectedMonth = new Date().toISOString().slice(0, 7); 
         
-        // CORRECCIÓN: Evitamos problemas de zona horaria al seleccionar el mes actual
-        let dateObj = new Date();
-        let selectedMonth = dateObj.getFullYear() + '-' + String(dateObj.getMonth() + 1).padStart(2, '0'); 
-        
-        const CATEGORIES = {
-            'Mercado': 'fa-basket-shopping text-emerald-500', 'Fijo': 'fa-thumbtack text-primary', 'Servicios': 'fa-plug text-yellow-500',
-            'Colegio': 'fa-school text-indigo-500', 'Niñera': 'fa-baby text-pink-500', 'Salud': 'fa-notes-medical text-red-500',
-            'Ocio': 'fa-martini-glass-citrus text-orange-500', 'Ropa': 'fa-shirt text-purple-500', 'Ahorro': 'fa-piggy-bank text-emerald-600',
-            'Otro': 'fa-tag text-slate-500'
-        };
-        
+        // Checklist predefinida (Los montos de la imagen)
         const defaultFixedExpenses = [
-            { id: 'f1', name: 'Colegio', amount: 48, category: 'Colegio' }, { id: 'f2', name: 'Niñera', amount: 85, category: 'Niñera' },
-            { id: 'f3', name: 'Estacionamiento', amount: 15, category: 'Servicios' }, { id: 'f4', name: 'Internet', amount: 22, category: 'Servicios' },
-            { id: 'f5', name: 'Mercado mensual', amount: 280, category: 'Mercado' }, { id: 'f6', name: 'Condominio', amount: 10, category: 'Fijo' },
-            { id: 'f7', name: 'Gasolina', amount: 5, category: 'Otro' }, { id: 'f8', name: 'Aseo personal', amount: 25, category: 'Mercado' },
-            { id: 'f9', name: 'Academia castañuelas', amount: 48, category: 'Colegio' }
+            { id: 'f1', name: 'Colegio', amount: 48, category: 'Fijo' },
+            { id: 'f2', name: 'Niñera', amount: 85, category: 'Fijo' },
+            { id: 'f3', name: 'Estacionamiento', amount: 15, category: 'Fijo' },
+            { id: 'f4', name: 'Internet', amount: 22, category: 'Fijo' },
+            { id: 'f5', name: 'Mercado mensual', amount: 280, category: 'Mercado' },
+            { id: 'f6', name: 'Condominio', amount: 10, category: 'Fijo' },
+            { id: 'f7', name: 'Gasolina', amount: 5, category: 'Otro' },
+            { id: 'f8', name: 'Aseo personal', amount: 25, category: 'Mercado' },
+            { id: 'f9', name: 'Academia castañuelas', amount: 48, category: 'Fijo' }
         ];
 
-        // --- SISTEMA DE LOGIN Y SINCRONIZACIÓN ---
+        const CATEGORIES = {
+            expense: [
+                { val: 'Fijo', text: 'Gasto Fijo' }, { val: 'Mercado', text: 'Mercado / Comida' },
+                { val: 'Hogar', text: 'Hogar / Reparaciones' }, { val: 'Salud', text: 'Salud / Farmacia' },
+                { val: 'Ocio', text: 'Ocio / Salidas' }, { val: 'Ahorro', text: 'Ahorro (Guardado)' },
+                { val: 'Otro', text: 'Otro Gasto' }
+            ],
+            income: [
+                { val: 'Salario', text: 'Salario / Nómina' }, { val: 'Bono', text: 'Bonificación' },
+                { val: 'Negocio', text: 'Negocio Propio' }, { val: 'Otro', text: 'Otro Ingreso' }
+            ]
+        };
+
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-login');
             const err = document.getElementById('login-error');
             btn.innerText = "Verificando..."; err.classList.add('hidden');
             try {
-                await signInWithEmailAndPassword(auth, document.getElementById('login-email').value.trim(), document.getElementById('login-password').value);
+                await signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-password').value);
             } catch (error) {
-                console.error("Error de login:", error);
-                if (error.code === 'auth/unauthorized-domain') {
-                    err.innerHTML = `<strong>Dominio de prueba bloqueado por Firebase:</strong><br>Para ver tus datos aquí antes de subir a GitHub, entra a <em>Firebase Console -> Authentication -> Settings -> Dominios autorizados</em> y agrega: <code class="bg-slate-100 px-1 py-0.5 rounded text-dark select-all">${window.location.hostname}</code>`;
-                } else {
-                    err.innerText = "Credenciales incorrectas (" + (error.code || error.message) + ").";
-                }
-                err.classList.remove('hidden'); 
-                btn.innerText = "Entrar";
+                err.innerText = "Credenciales incorrectas o error de conexión."; err.classList.remove('hidden'); btn.innerText = "Entrar de forma segura";
             }
         });
 
@@ -372,8 +352,7 @@
                 document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('app-content').style.display = 'flex';
                 document.getElementById('fab-button').classList.remove('hidden');
-                setupRealtimeListeners();
-                fetchRates();
+                initApp();
             } else {
                 document.getElementById('login-screen').style.display = 'flex';
                 document.getElementById('app-content').style.display = 'none';
@@ -381,221 +360,127 @@
             }
         });
 
+        function initApp() {
+            setupEventListeners();
+            document.getElementById('month-selector').value = selectedMonth;
+            updateCategories();
+            fetchRates();
+            setupRealtimeListeners();
+        }
+
         function setupRealtimeListeners() {
-            setCloudStatus('Conectando...', 'yellow');
-            const diagBanner = document.getElementById('db-diagnostic-banner');
-            const diagText = document.getElementById('db-diagnostic-text');
+            setCloudStatus('Conectando...', 'text-yellow-600');
             
-            const settingsRef = doc(db, 'cuentas_claras_config', 'ajustes');
+            // Listener de Configuraciones
+            const settingsRef = doc(db, 'configuracion', 'ajustes');
             onSnapshot(settingsRef, (docSnap) => {
                 if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    appState.settings = {
-                        p1: data.p1 || { name: 'Dougleisy', target: 202 },
-                        p2: data.p2 || { name: 'Frederick', target: 337 },
-                        fixedExpenses: data.fixedExpenses || defaultFixedExpenses
-                    };
+                    appState.settings = docSnap.data();
+                    if(!appState.settings.fixedExpenses) appState.settings.fixedExpenses = defaultFixedExpenses;
                 } else {
-                    appState.settings = { p1: { name: 'Dougleisy', target: 202 }, p2: { name: 'Frederick', target: 337 }, fixedExpenses: defaultFixedExpenses };
-                    setDoc(settingsRef, appState.settings); 
+                    appState.settings.fixedExpenses = defaultFixedExpenses;
+                    setDoc(settingsRef, appState.settings);
                 }
                 updateUI();
-            }, (err) => {
-                console.error("Error leyendo configuración:", err);
             });
 
-            // Mapa global para unir los datos de TODAS las rutas anteriores y actuales sin perder ni un solo registro
-            const allSources = {
-                main: [],
-                legacyArtifacts: [],
-                collectionGroupTrans: [],
-                rtdbData: [],
-                localBackup: []
-            };
-
-            // 1. Revisar si quedaron datos en el almacenamiento local del navegador (teléfono/PC)
-            try {
-                for (let i = 0; i < localStorage.length; i++) {
-                    const key = localStorage.key(i);
-                    const raw = localStorage.getItem(key);
-                    if (raw && (raw.includes('"amount"') || raw.includes('"transactions"'))) {
-                        const parsed = JSON.parse(raw);
-                        if (Array.isArray(parsed)) {
-                            allSources.localBackup.push(...parsed);
-                        } else if (parsed && Array.isArray(parsed.transactions)) {
-                            allSources.localBackup.push(...parsed.transactions);
-                        }
-                    }
-                }
-            } catch (e) {}
-
-            const mergeAndRender = () => {
-                const combinedMap = new Map();
-                const allItems = [
-                    ...allSources.localBackup,
-                    ...allSources.rtdbData,
-                    ...allSources.legacyArtifacts,
-                    ...allSources.collectionGroupTrans,
-                    ...allSources.main
-                ];
-
-                allItems.forEach((item, idx) => {
-                    if (!item || typeof item !== 'object') return;
-                    const id = item.id || ('rec_' + idx);
-                    combinedMap.set(id, { ...item, id });
-                });
-
-                appState.transactions = Array.from(combinedMap.values());
-                
-                // Si hay transacciones en la base de datos pero el mes actual (ej. 2026-11) no coincide con el año de los registros (ej. 2024-10 o 2025-10), saltar automáticamente al último mes con datos
-                if (appState.transactions.length > 0 && !window.hasAutoSelectedMonth) {
-                    const currentMonthHasData = appState.transactions.some(t => {
-                        const d = t.date || t.timestamp || '';
-                        return d.startsWith(selectedMonth);
-                    });
-                    if (!currentMonthHasData) {
-                        const validDates = appState.transactions
-                            .map(t => (t.date || t.timestamp || '').slice(0, 7))
-                            .filter(d => /^\d{4}-\d{2}$/.test(d))
-                            .sort();
-                        if (validDates.length > 0) {
-                            selectedMonth = validDates[validDates.length - 1];
-                        }
-                    }
-                    window.hasAutoSelectedMonth = true;
-                }
-
-                updateUI();
-                setCloudStatus(`Sincronizado (${appState.transactions.length})`, 'emerald');
-                diagBanner.classList.add('hidden');
-            };
-
-            // 2. Ruta actual en Firestore ('cuentas_claras_transacciones')
-            const transactionsRef = collection(db, 'cuentas_claras_transacciones');
+            // Listener de Transacciones
+            const transactionsRef = collection(db, 'transacciones');
             onSnapshot(transactionsRef, (snapshot) => {
-                allSources.main = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                mergeAndRender();
+                appState.transactions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                updateUI();
+                setCloudStatus('Sincronizado', 'text-emerald-500');
             }, (error) => {
-                console.error("Error leyendo cuentas_claras_transacciones:", error);
-                setCloudStatus('Error de Permisos', 'red');
-                diagBanner.classList.remove('hidden');
-                diagText.innerText = `Error de lectura en Firestore (${error.code}). Verifica las Reglas en Firebase Console.`;
+                setCloudStatus('Error', 'text-red-500');
+                console.error("Firebase read error:", error);
             });
-
-            // 3. Ruta original de la primera versión ('artifacts/default-app-id/public/data/transactions')
-            try {
-                const legacyRef = collection(db, 'artifacts', 'default-app-id', 'public', 'data', 'transactions');
-                onSnapshot(legacyRef, (snapshot) => {
-                    if (!snapshot.empty) {
-                        allSources.legacyArtifacts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                        mergeAndRender();
-                    }
-                }, () => {});
-            } catch (e) {}
-
-            // 4. Búsqueda global en CUALQUIER subcolección llamada 'transactions' dentro de tu Firestore
-            try {
-                const groupQuery = collectionGroup(db, 'transactions');
-                onSnapshot(groupQuery, (snapshot) => {
-                    if (!snapshot.empty) {
-                        allSources.collectionGroupTrans = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                        mergeAndRender();
-                    }
-                }, () => {});
-            } catch (e) {}
-
-            // 5. Búsqueda en Realtime Database (tu URL cuentas-claras-b7f45-default-rtdb)
-            try {
-                const dbRef = rtdbRef(rtdb, '/');
-                onValue(dbRef, (snapshot) => {
-                    const data = snapshot.val();
-                    if (data) {
-                        const extracted = [];
-                        const extractTransactions = (obj) => {
-                            if (!obj || typeof obj !== 'object') return;
-                            if (obj.amount !== undefined && (obj.description !== undefined || obj.type !== undefined)) {
-                                extracted.push(obj);
-                                return;
-                            }
-                            Object.entries(obj).forEach(([k, v]) => {
-                                if (v && typeof v === 'object') {
-                                    if (v.amount !== undefined) extracted.push({ id: k, ...v });
-                                    else extractTransactions(v);
-                                }
-                            });
-                        };
-                        extractTransactions(data);
-                        allSources.rtdbData = extracted;
-                        mergeAndRender();
-                    }
-                }, () => {});
-            } catch (e) {}
         }
 
-        // --- UTILIDADES ---
-        function setCloudStatus(text, color) {
-            const el = document.getElementById('cloud-status');
-            const icon = el.querySelector('i');
-            document.getElementById('cloud-text').innerText = text;
-            el.className = `flex items-center gap-2 text-xs font-medium bg-${color}-800/50 px-3 py-1.5 rounded-full`;
-            icon.className = `fa-solid fa-cloud text-${color}-300 ${text === 'Conectando...' ? 'syncing-icon' : ''}`;
-        }
-
-        function showToast(message, type = 'success') {
-            const toast = document.createElement('div');
-            const color = type === 'success' ? 'bg-emerald-500' : (type === 'error' ? 'bg-danger' : 'bg-slate-700');
-            toast.className = `${color} text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 transform transition-all duration-300 translate-y-[-20px] opacity-0`;
-            toast.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-check' : 'fa-info-circle'}"></i><p class="text-sm font-bold">${message}</p>`;
-            document.getElementById('toast-container').appendChild(toast);
-            setTimeout(() => { toast.classList.remove('translate-y-[-20px]', 'opacity-0'); }, 10);
-            setTimeout(() => { toast.classList.add('opacity-0'); setTimeout(() => toast.remove(), 300); }, 3000);
-        }
-
-        function closeModal(id) { document.getElementById(id).classList.add('hidden'); document.body.classList.remove('modal-active'); }
-        function openModal(id) { document.getElementById(id).classList.remove('hidden'); document.body.classList.add('modal-active'); }
-
-        // --- FUNCIONES CORE (TASAS, CÁLCULOS, UI) ---
         async function fetchRates() {
-            const bcvEl = document.getElementById('rate-bcv'), binanceEl = document.getElementById('rate-binance'), btn = document.getElementById('btn-refresh-rates');
-            btn.classList.add('fa-spin');
+            const bcvEl = document.getElementById('rate-bcv');
+            const binanceEl = document.getElementById('rate-binance');
+            bcvEl.innerText = '...'; binanceEl.innerText = '...';
+
             try {
-                const [bcvRes, parRes] = await Promise.all([
-                    fetch('https://ve.dolarapi.com/v1/dolares/oficial'),
-                    fetch('https://ve.dolarapi.com/v1/dolares/paralelo')
-                ]);
-                if (bcvRes.ok) { const data = await bcvRes.json(); currentRates.bcv = data.promedio; bcvEl.innerText = data.promedio.toFixed(2); }
-                if (parRes.ok) { const data = await parRes.json(); currentRates.paralelo = data.promedio; binanceEl.innerText = data.promedio.toFixed(2); }
-            } catch (err) {
-                console.error("Tasas:", err);
-                if(currentRates.bcv === 0) { bcvEl.innerText = 'Err'; binanceEl.innerText = 'Err'; }
-            }
-            btn.classList.remove('fa-spin');
+                const resBcv = await fetch('https://ve.dolarapi.com/v1/dolares/oficial');
+                if (resBcv.ok) { const data = await resBcv.json(); currentRates.bcv = data.promedio; bcvEl.innerText = data.promedio.toFixed(2); }
+            } catch (e) { bcvEl.innerText = 'Err'; }
+
+            try {
+                const resPara = await fetch('https://ve.dolarapi.com/v1/dolares/paralelo');
+                if (resPara.ok) { const data = await resPara.json(); currentRates.paralelo = data.promedio; binanceEl.innerText = data.promedio.toFixed(2); }
+            } catch (e) { binanceEl.innerText = 'Err'; }
+            toggleRateInput();
+        }
+
+        function setCloudStatus(text, colorClass) {
+            const txt = document.getElementById('cloud-text');
+            const icon = document.querySelector('#cloud-status i');
+            txt.innerText = text;
+            icon.className = `fa-solid fa-cloud ${colorClass}`;
+        }
+
+        function setupEventListeners() {
+            document.getElementById('btn-open-add').addEventListener('click', openAddModal);
+            document.getElementById('btn-close-add').addEventListener('click', closeAddModal);
+            document.getElementById('btn-settings').addEventListener('click', openSettingsModal);
+            document.getElementById('btn-close-settings').addEventListener('click', closeSettingsModal);
+            document.getElementById('btn-save-settings').addEventListener('click', saveSettings);
+            document.getElementById('btn-refresh-rates').addEventListener('click', fetchRates);
+
+            document.getElementById('expense-form').addEventListener('submit', handleTransactionSubmit);
+            document.querySelectorAll('input[name="trans-type"]').forEach(el => el.addEventListener('change', updateCategories));
+            document.getElementById('exp-currency').addEventListener('change', toggleRateInput);
+            document.getElementById('exp-amount').addEventListener('input', calculateConverted);
+            document.getElementById('exp-rate').addEventListener('input', calculateConverted);
+            document.getElementById('btn-use-bcv').addEventListener('click', () => { document.getElementById('exp-rate').value = currentRates.bcv; calculateConverted(); });
+            document.getElementById('btn-use-usdt').addEventListener('click', () => { document.getElementById('exp-rate').value = currentRates.paralelo; calculateConverted(); });
+
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', (e) => {
+                currentTab = e.target.dataset.tab;
+                document.querySelectorAll('.tab-btn').forEach(b => {
+                    b.classList.remove('text-primary', 'border-primary', 'bg-white', 'shadow-sm');
+                    b.classList.add('text-slate-500', 'border-transparent', 'hover:bg-slate-100');
+                });
+                e.target.classList.add('text-primary', 'border-primary', 'bg-white', 'shadow-sm');
+                e.target.classList.remove('text-slate-500', 'border-transparent', 'hover:bg-slate-100');
+                updateUI();
+            }));
+
+            document.getElementById('btn-cancel-delete').addEventListener('click', closeDeleteModal);
+            document.getElementById('btn-confirm-delete').addEventListener('click', confirmDelete);
+
+            document.getElementById('month-selector').addEventListener('change', (e) => { selectedMonth = e.target.value; updateUI(); });
+            document.getElementById('prev-month').addEventListener('click', () => changeMonth(-1));
+            document.getElementById('next-month').addEventListener('click', () => changeMonth(1));
+        }
+
+        function changeMonth(offset) {
+            const date = new Date(selectedMonth + "-01T12:00:00");
+            date.setMonth(date.getMonth() + offset);
+            selectedMonth = date.toISOString().slice(0, 7);
+            document.getElementById('month-selector').value = selectedMonth;
+            updateUI();
+        }
+
+        function toggleRateInput() {
+            const currency = document.getElementById('exp-currency').value;
+            const container = document.getElementById('rate-container');
+            if (currency === 'VES') { container.classList.remove('hidden'); if(!document.getElementById('exp-rate').value) document.getElementById('exp-rate').value = currentRates.bcv; } 
+            else { container.classList.add('hidden'); }
+            calculateConverted();
+        }
+
+        function calculateConverted() {
+            const curr = document.getElementById('exp-currency').value;
+            const amt = parseFloat(document.getElementById('exp-amount').value) || 0;
+            const rate = parseFloat(document.getElementById('exp-rate').value) || 0;
+            if (curr === 'VES' && rate > 0) document.getElementById('converted-usd').innerText = `$${(amt/rate).toFixed(2)}`;
+            else document.getElementById('converted-usd').innerText = `$${amt.toFixed(2)}`;
         }
 
         function updateUI() {
-            document.getElementById('month-selector').value = selectedMonth;
-            
-            // Función robusta para extraer el mes (YYYY-MM) sin importar el formato en que se haya guardado en Octubre o Noviembre
-            const getTxMonth = (t) => {
-                const rawDate = t.date || t.timestamp || '';
-                if (!rawDate) return selectedMonth;
-                // Si viene en formato YYYY-MM-DD o ISO
-                if (/^\d{4}-\d{2}/.test(rawDate)) return rawDate.slice(0, 7);
-                // Si viene en formato DD/MM/YYYY
-                if (/^\d{2}\/\d{2}\/\d{4}/.test(rawDate)) {
-                    const parts = rawDate.split('/');
-                    return `${parts[2]}-${parts[1]}`;
-                }
-                const parsed = new Date(rawDate);
-                if (!isNaN(parsed.getTime())) {
-                    return parsed.getFullYear() + '-' + String(parsed.getMonth() + 1).padStart(2, '0');
-                }
-                return selectedMonth;
-            };
-
-            const currentMonthTransactions = appState.transactions.filter(t => getTxMonth(t) === selectedMonth);
-            const historicalTransactions = appState.transactions.filter(t => getTxMonth(t) < selectedMonth);
-            const allUpToCurrent = appState.transactions.filter(t => getTxMonth(t) <= selectedMonth);
+            const currentMonthTransactions = appState.transactions.filter(t => new Date(t.timestamp).toISOString().slice(0,7) === selectedMonth);
 
             document.querySelectorAll('.partner1-name').forEach(el => el.innerText = appState.settings.p1.name);
             document.querySelectorAll('.partner2-name').forEach(el => el.innerText = appState.settings.p2.name);
@@ -607,23 +492,15 @@
             const p2Percent = totalTarget > 0 ? (appState.settings.p2.target / totalTarget) * 100 : 0;
 
             let p1Shared = 0, p2Shared = 0, p1Ind = 0, p2Ind = 0, p1Inc = 0, p2Inc = 0;
-            let categoryTotals = {};
-            let totalSavings = 0;
-            let currentTotalSpent = 0;
-
-            allUpToCurrent.forEach(t => { if (t.type === 'expense' && t.category === 'Ahorro' && !t.isCompletionMarker) { totalSavings += parseFloat(t.amount); } });
-            const savingsEl = document.getElementById('total-savings');
-            if(savingsEl) savingsEl.innerText = totalSavings.toFixed(2);
 
             currentMonthTransactions.forEach(t => {
                 const amt = parseFloat(t.amount);
-                if (t.isCompletionMarker) return;
-                
                 if (t.type === 'expense') {
-                    if (t.category !== 'Ahorro') { categoryTotals[t.category] = (categoryTotals[t.category] || 0) + amt; currentTotalSpent += amt; }
                     if (t.scope === 'shared') { t.payer === 'p1' ? p1Shared += amt : p2Shared += amt; } 
                     else { t.payer === 'p1' ? p1Ind += amt : p2Ind += amt; }
-                } else if (t.type === 'income') { t.payer === 'p1' ? p1Inc += amt : p2Inc += amt; }
+                } else if (t.type === 'income') {
+                    t.payer === 'p1' ? p1Inc += amt : p2Inc += amt;
+                }
             });
 
             const totalShared = p1Shared + p2Shared;
@@ -646,358 +523,288 @@
             document.getElementById('p2-available').innerText = p2Avail.toFixed(2);
             document.getElementById('p2-available').className = p2Avail < 0 ? 'text-danger' : 'text-teal-700';
 
-            // Histórico deudas arrastradas
-            let histP1Shared = 0, histP2Shared = 0;
-            historicalTransactions.forEach(t => {
-                if(t.type === 'expense' && t.scope === 'shared' && !t.isCompletionMarker) { t.payer === 'p1' ? histP1Shared += parseFloat(t.amount) : histP2Shared += parseFloat(t.amount); }
-            });
-            const histTotalShared = histP1Shared + histP2Shared;
-            const histP1Duty = histTotalShared * (p1Percent / 100);
-            const histP1Balance = histP1Shared - histP1Duty;
-
-            calculateSettlement(totalShared, p1Shared, p1Percent, histP1Balance);
-            renderCategoryBreakdown(categoryTotals, currentTotalSpent);
+            calculateSettlement(totalShared, p1Shared, p1Percent);
             renderFixedExpenses(currentMonthTransactions);
             renderTransactionsList(currentMonthTransactions);
         }
 
-        function calculateSettlement(totalShared, p1Paid, p1Percent, histP1Balance = 0) {
+        function calculateSettlement(totalShared, p1Paid, p1Percent) {
             const box = document.getElementById('settlement-box'), okBox = document.getElementById('settlement-ok'), msg = document.getElementById('settlement-text');
-            const currentP1Duty = totalShared * (p1Percent / 100); 
-            const currentP1Balance = p1Paid - currentP1Duty; 
-            const netP1Balance = currentP1Balance + histP1Balance;
+            if (totalShared === 0) { box.classList.add('hidden'); okBox.classList.remove('hidden'); return; }
             
-            if (Math.abs(netP1Balance) < 0.1) { box.classList.add('hidden'); okBox.classList.remove('hidden'); return; }
+            const p1Duty = totalShared * (p1Percent / 100); 
+            const p1Balance = p1Paid - p1Duty; 
+            
+            if (Math.abs(p1Balance) < 0.1) { box.classList.add('hidden'); okBox.classList.remove('hidden'); return; }
             box.classList.remove('hidden'); okBox.classList.add('hidden');
 
-            let detailHTML = '';
-            if (Math.abs(histP1Balance) > 0.1) {
-                const absHist = Math.abs(histP1Balance).toFixed(2);
-                const whoOwedHist = histP1Balance > 0 ? appState.settings.p2.name : appState.settings.p1.name;
-                detailHTML = `<div class="text-[10px] text-orange-600/80 mb-1 border-b border-orange-200/50 pb-1 flex justify-between"><span>Incluye mes anterior:</span> <span class="font-bold">${whoOwedHist} debía $${absHist}</span></div>`;
-            }
-
-            if (netP1Balance > 0) {
-                msg.innerHTML = `${detailHTML}<span class="font-semibold">${appState.settings.p2.name}</span> debe transferir a <span class="font-semibold">${appState.settings.p1.name}</span>:<br/><span class="text-xl font-black text-orange-600 block mt-1">$${Math.abs(netP1Balance).toFixed(2)}</span>`;
+            if (p1Balance > 0) {
+                msg.innerHTML = `<span class="font-semibold">${appState.settings.p2.name}</span> debe transferir a <span class="font-semibold">${appState.settings.p1.name}</span>:<br/><span class="text-xl font-black text-orange-600 block mt-1">$${Math.abs(p1Balance).toFixed(2)}</span>`;
             } else {
-                msg.innerHTML = `${detailHTML}<span class="font-semibold">${appState.settings.p1.name}</span> debe transferir a <span class="font-semibold">${appState.settings.p2.name}</span>:<br/><span class="text-xl font-black text-orange-600 block mt-1">$${Math.abs(netP1Balance).toFixed(2)}</span>`;
+                msg.innerHTML = `<span class="font-semibold">${appState.settings.p1.name}</span> debe transferir a <span class="font-semibold">${appState.settings.p2.name}</span>:<br/><span class="text-xl font-black text-orange-600 block mt-1">$${Math.abs(p1Balance).toFixed(2)}</span>`;
             }
-        }
-
-        function renderCategoryBreakdown(categories, totalSpent) {
-            const container = document.getElementById('category-breakdown');
-            if(!container) return;
-            container.innerHTML = '';
-            const sorted = Object.entries(categories).sort((a,b) => b[1] - a[1]);
-            
-            if (sorted.length === 0) { container.innerHTML = '<p class="text-slate-400 text-sm text-center py-6">No hay gastos registrados este mes.</p>'; return; }
-            const maxAmt = sorted[0][1];
-            
-            sorted.forEach(([cat, amt]) => {
-                const percentOfTotal = totalSpent > 0 ? ((amt / totalSpent) * 100).toFixed(1) : 0;
-                const percentOfMax = maxAmt > 0 ? ((amt / maxAmt) * 100).toFixed(1) : 0;
-                const el = document.createElement('div'); el.className = 'flex items-center gap-3';
-                el.innerHTML = `<div class="w-24 text-[11px] font-bold text-slate-600 truncate" title="${cat}">${cat}</div><div class="flex-grow bg-slate-100 rounded-full h-3.5 relative overflow-hidden flex items-center"><div class="bg-indigo-500 h-full rounded-full" style="width: ${percentOfMax}%"></div><span class="absolute left-2 text-[9px] font-bold ${percentOfMax > 20 ? 'text-white' : 'text-slate-600'} drop-shadow-sm z-10">${percentOfTotal}%</span></div><div class="w-16 text-right text-xs font-black text-dark">$${amt.toFixed(2)}</div>`;
-                container.appendChild(el);
-            });
         }
 
         function renderFixedExpenses(monthTrans) {
             const grid = document.getElementById('fixed-expenses-grid');
+            const fixed = appState.settings.fixedExpenses;
             grid.innerHTML = '';
-            let completedCount = 0;
-            const fixedExpensesList = appState.settings.fixedExpenses || defaultFixedExpenses;
+            let paidCount = 0;
 
-            fixedExpensesList.forEach(fixedItem => {
-                let amountPaid = 0;
-                const manualCloseTrans = monthTrans.find(t => t.isCompletionMarker && t.fixedId === fixedItem.id);
-                const isManuallyClosed = !!manualCloseTrans;
-                
-                const searchKeywords = fixedItem.name.toLowerCase().split(' ');
-                
-                monthTrans.forEach(t => {
-                    if (t.type === 'expense' && t.scope === 'shared' && !t.isCompletionMarker) {
-                        const directMatch = t.linkedFixedId === fixedItem.id;
-                        const descMatch = searchKeywords.some(kw => kw.length > 3 && t.description.toLowerCase().includes(kw));
-                        const catMatch = t.category === fixedItem.category && (fixedItem.category === 'Mercado' || fixedItem.category === 'Colegio' || fixedItem.category === 'Niñera');
-                        if (directMatch || descMatch || catMatch) { amountPaid += parseFloat(t.amount); }
-                    }
+            fixed.forEach(item => {
+                // LÓGICA INTELIGENTE DE VINCULACIÓN (Por Categoría y Descripción)
+                const relatedTrans = monthTrans.filter(t => {
+                    // Ignorar si no es un gasto compartido
+                    if (t.type !== 'expense' || t.scope !== 'shared') return false;
+                    if (t.isCompletionMarker && t.desc === item.name) return true;
+                    
+                    const tDesc = t.desc.toLowerCase().trim();
+                    const iName = item.name.toLowerCase().trim();
+                    const tCat = t.category;
+
+                    // 1. Exacto o incluido en la descripción (ej. "Pago niñera semana 1" vincula con "Niñera")
+                    if (tDesc.includes(iName)) return true;
+
+                    // 2. Por categoría (Atrapará automáticamente lo que ya tenías registrado)
+                    if (iName === 'mercado mensual' && tCat === 'Mercado') return true;
+                    if (iName === 'niñera' && tCat === 'Niñera') return true;
+                    if (iName === 'internet' && tCat === 'Internet') return true;
+                    if (iName === 'estacionamiento' && tCat === 'Estacionamiento') return true;
+                    if (iName === 'colegio' && tCat === 'Colegio') return true;
+                    if (iName === 'condominio' && tCat === 'Condominio') return true;
+                    if (iName === 'gasolina' && tCat === 'Vehiculo') return true;
+                    if (iName === 'aseo personal' && tCat === 'Aseo') return true;
+
+                    return false;
                 });
-
-                const isCompleted = isManuallyClosed || (amountPaid >= fixedItem.amount);
-                if (isCompleted) completedCount++;
-
-                const progressPercent = Math.min((amountPaid / fixedItem.amount) * 100, 100);
-                let colorClass = isCompleted ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-200';
                 
+                const sumPaid = relatedTrans.reduce((acc, t) => acc + (parseFloat(t.amount) || 0), 0);
+                
+                const isManuallyCompleted = relatedTrans.some(t => t.isCompletionMarker);
+                const isFullyPaid = sumPaid >= item.amount || isManuallyCompleted;
+
+                if (isFullyPaid) paidCount++;
+
                 const el = document.createElement('div');
-                el.className = `p-3 rounded-xl border ${colorClass} flex flex-col justify-between h-full transition-all`;
-                
-                el.innerHTML = `
-                    <div class="flex justify-between items-start mb-2">
-                        <div class="flex items-center gap-2">
-                            <i class="fa-solid ${isCompleted ? 'fa-check-circle text-emerald-500' : 'fa-circle-dot text-slate-300'}"></i>
-                            <span class="text-sm font-bold text-slate-700 truncate" title="${fixedItem.name}">${fixedItem.name}</span>
+                if (isFullyPaid) {
+                    el.className = 'border border-emerald-200 bg-emerald-50 rounded-xl p-3 flex flex-col gap-2 opacity-75 shadow-sm';
+                    el.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <i class="fa-solid fa-circle-check text-emerald-500 text-xl"></i>
+                                <div>
+                                    <p class="text-sm font-bold text-slate-500 line-through">${item.name}</p>
+                                    <p class="text-[10px] uppercase text-emerald-600 font-bold mt-0.5">Completado</p>
+                                </div>
+                            </div>
+                            <div class="font-black text-slate-400 text-sm">$${sumPaid.toFixed(2)} <span class="text-[10px] font-normal">/ $${item.amount}</span></div>
                         </div>
-                        <span class="text-xs font-black ${isCompleted ? 'text-emerald-700' : 'text-slate-600'}">$${fixedItem.amount}</span>
-                    </div>
-                    <div class="space-y-2 mt-auto">
-                        <div class="flex justify-between text-[10px] font-bold text-slate-500"><span>Abonado: $${amountPaid.toFixed(2)}</span><span>Restan: $${Math.max(fixedItem.amount - amountPaid, 0).toFixed(2)}</span></div>
-                        <div class="w-full bg-slate-200 rounded-full h-1.5"><div class="${isCompleted ? 'bg-emerald-500' : 'bg-primary'} h-1.5 rounded-full" style="width: ${progressPercent}%"></div></div>
-                        ${!isCompleted ? `<div class="flex gap-2 mt-2 pt-2 border-t border-slate-200/60"><button class="btn-abono flex-1 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 text-xs font-bold py-1.5 rounded-lg shadow-sm" data-id="${fixedItem.id}" data-name="${fixedItem.name}" data-cat="${fixedItem.category}" data-rem="${fixedItem.amount - amountPaid}">+ Abono</button><button class="btn-cerrar bg-slate-200 hover:bg-slate-300 text-slate-600 text-xs font-bold px-2 py-1.5 rounded-lg" data-id="${fixedItem.id}" title="Marcar como listo este mes"><i class="fa-solid fa-check"></i></button></div>` : ''}
-                    </div>
-                `;
+                    `;
+                } else {
+                    const percent = Math.min((sumPaid / item.amount) * 100, 100);
+                    const remaining = Math.max(item.amount - sumPaid, 0).toFixed(2);
+
+                    el.className = 'border border-slate-200 bg-white rounded-xl p-3 flex flex-col gap-2 shadow-sm transition-all hover:border-primary/50';
+                    el.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <i class="fa-regular fa-circle text-slate-300 text-xl"></i>
+                                <div>
+                                    <p class="text-sm font-bold text-dark">${item.name}</p>
+                                    <p class="text-[10px] text-slate-500 mt-0.5">En progreso</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <span class="font-black text-dark text-sm">$${sumPaid.toFixed(2)}</span>
+                                <span class="text-[10px] text-slate-500 block">de $${item.amount}</span>
+                            </div>
+                        </div>
+                        <!-- Barra de progreso -->
+                        <div class="w-full bg-slate-100 rounded-full h-1.5 mt-1">
+                            <div class="bg-primary h-1.5 rounded-full transition-all duration-500" style="width: ${percent}%"></div>
+                        </div>
+                        <!-- Botones de Acción -->
+                        <div class="flex justify-between items-center mt-2 pt-2 border-t border-slate-50">
+                            <button class="btn-mark-complete text-[11px] font-medium text-slate-400 hover:text-emerald-500 flex items-center gap-1 transition p-1" data-name="${item.name}">
+                                <i class="fa-solid fa-check"></i> Cerrar
+                            </button>
+                            <button class="btn-add-payment bg-primary hover:bg-indigo-600 text-white text-xs px-3 py-1.5 rounded-lg flex items-center gap-1 shadow-sm transition" data-name="${item.name}" data-remaining="${remaining}" data-category="${item.category}">
+                                <i class="fa-solid fa-plus"></i> Abono
+                            </button>
+                        </div>
+                    `;
+                }
                 grid.appendChild(el);
             });
-
-            document.getElementById('fixed-progress-text').innerText = `${completedCount} / ${fixedExpensesList.length} completados`;
             
-            document.querySelectorAll('.btn-abono').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const id = e.currentTarget.dataset.id;
-                    const name = e.currentTarget.dataset.name;
-                    const cat = e.currentTarget.dataset.cat;
-                    const rem = e.currentTarget.dataset.rem;
-                    
-                    document.getElementById('expense-form').reset();
-                    document.getElementById('edit-id').value = '';
-                    document.getElementById('linked-fixed-id').value = id;
-                    document.getElementById('exp-desc').value = `Abono: ${name}`;
-                    document.getElementById('exp-amount').value = parseFloat(rem).toFixed(2);
-                    
-                    // Al abrir el modal, la fecha del abono se coloca como la actual según la zona horaria del dispositivo
-                    let today = new Date();
-                    document.getElementById('exp-date').value = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
-                    
-                    document.querySelector('input[name="trans-type"][value="expense"]').checked = true;
-                    document.querySelector('input[name="exp-scope"][value="shared"]').checked = true;
-                    document.getElementById('exp-category').value = cat;
-                    document.getElementById('rate-container').classList.add('hidden');
-                    
-                    document.getElementById('modal-title').innerText = `Abonar a ${name}`;
-                    openModal('add-modal');
+            document.getElementById('fixed-progress-text').innerText = `${paidCount} / ${fixed.length} completados`;
+
+            // Asignar eventos a los botones de "Abono"
+            document.querySelectorAll('.btn-add-payment').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    openAddModal();
+                    document.getElementById('exp-desc').value = btn.dataset.name;
+                    document.getElementById('exp-amount').value = btn.dataset.remaining; // Te sugiere pagar lo que falta
+                    document.getElementById('exp-currency').value = 'USD';
+                    document.querySelector('input[value="expense"]').checked = true;
+                    updateCategories();
+                    document.querySelector('input[value="shared"]').checked = true;
+                    document.getElementById('exp-category').value = btn.dataset.category;
+                    toggleRateInput();
                 });
             });
 
-            document.querySelectorAll('.btn-cerrar').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    const id = e.currentTarget.dataset.id;
-                    let today = new Date();
-                    const localDateStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
-                    const transData = { type: 'expense', amount: 0, date: localDateStr, timestamp: today.toISOString(), isCompletionMarker: true, fixedId: id };
-                    const docRef = doc(db, 'cuentas_claras_transacciones', 'marker_' + id + '_' + selectedMonth);
-                    await setDoc(docRef, transData);
-                    showToast('Gasto marcado como listo');
+            // Asignar eventos al botón de "Cerrar" manual
+            document.querySelectorAll('.btn-mark-complete').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    markFixedAsComplete(btn.dataset.name);
                 });
             });
         }
 
-        function renderTransactionsList(transactions) {
-            const list = document.getElementById('expenses-list');
-            list.innerHTML = '';
-            const filtered = transactions.filter(t => !t.isCompletionMarker && (currentTab === 'all' || (currentTab === 'shared' && t.scope === 'shared') || (currentTab === 'p1' && t.payer === 'p1') || (currentTab === 'p2' && t.payer === 'p2')));
-            
-            filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+        // Función que guarda una "marca invisible" para saber que cerraste el gasto aunque no hayas llegado al 100%
+        window.markFixedAsComplete = async function(name) {
+            const docId = 'trans_' + Date.now();
+            const parts = document.getElementById('month-selector').value.split('-');
+            const data = {
+                type: 'expense', scope: 'shared', desc: name,
+                amount: 0, originalAmount: 0, originalCurrency: 'USD', exchangeRate: null,
+                category: 'Otro', payer: 'p1',
+                timestamp: new Date(parts[0], parts[1]-1, 15, 12,0,0).getTime(), 
+                isCompletionMarker: true // Esta bandera oculta la transacción del historial pero cierra el gasto
+            };
+            setCloudStatus('Cerrando...', 'text-yellow-500');
+            try { 
+                await setDoc(doc(db, 'transacciones', docId), data); 
+                showToast('Gasto cerrado por este mes'); 
+            } catch(e) { 
+                showToast('Error al cerrar gasto', 'error'); 
+            }
+        };
 
-            if (filtered.length === 0) { list.innerHTML = `<div class="p-8 text-center text-slate-400"><i class="fa-solid fa-receipt text-4xl mb-3 opacity-20"></i><p>No hay registros para mostrar</p></div>`; return; }
+        function renderTransactionsList(transactions) {
+            const listEl = document.getElementById('expenses-list');
+            listEl.innerHTML = '';
+            
+            const filtered = transactions.filter(t => {
+                if (t.isCompletionMarker) return false; // Ocultamos las marcas de cierre para no ensuciar tu historial
+                
+                if (currentTab === 'all') return true;
+                if (currentTab === 'shared') return t.scope === 'shared' && t.type === 'expense';
+                if (currentTab === 'p1') return t.payer === 'p1' && (t.scope === 'individual' || t.type === 'income');
+                if (currentTab === 'p2') return t.payer === 'p2' && (t.scope === 'individual' || t.type === 'income');
+            }).sort((a,b) => b.timestamp - a.timestamp);
+
+            if (filtered.length === 0) { listEl.innerHTML = `<div class="p-8 text-center text-slate-400">No hay movimientos.</div>`; return; }
 
             filtered.forEach(t => {
-                const isInc = t.type === 'income';
+                const dateStr = new Date(t.timestamp).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
                 const payerName = t.payer === 'p1' ? appState.settings.p1.name : appState.settings.p2.name;
-                const payerColor = t.payer === 'p1' ? 'text-indigo-600 bg-indigo-50 border-indigo-100' : 'text-teal-600 bg-teal-50 border-teal-100';
-                const iconInfo = CATEGORIES[t.category] || 'fa-tag text-slate-400';
+                const isIncome = t.type === 'income';
                 
-                let scopeBadge = '';
-                if(!isInc) { scopeBadge = t.scope === 'shared' ? `<span class="text-[10px] font-bold bg-primary text-white px-2 py-0.5 rounded-md ml-2 shadow-sm"><i class="fa-solid fa-users mr-1"></i>Común</span>` : `<span class="text-[10px] font-bold bg-slate-200 text-slate-600 px-2 py-0.5 rounded-md ml-2 shadow-sm"><i class="fa-solid fa-user mr-1"></i>Personal</span>`; }
-                else { scopeBadge = `<span class="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-md ml-2 shadow-sm"><i class="fa-solid fa-arrow-down mr-1"></i>Ingreso</span>`; }
-
                 const el = document.createElement('div');
-                el.className = 'p-4 flex items-center justify-between hover:bg-slate-50 transition-colors group';
+                el.className = 'px-5 py-4 flex justify-between items-center hover:bg-slate-50 transition group';
                 el.innerHTML = `
-                    <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-lg shadow-inner shrink-0"><i class="fa-solid ${iconInfo}"></i></div>
+                    <div class="flex flex-1">
                         <div>
-                            <p class="font-bold text-slate-800 text-sm flex items-center flex-wrap gap-1">${t.description} ${scopeBadge}</p>
-                            <p class="text-xs text-slate-500 mt-0.5 font-medium">
-                                <i class="fa-regular fa-calendar mr-1"></i> ${t.date} • <span class="px-2 py-0.5 rounded border ${payerColor}">${payerName}</span>
-                            </p>
+                            <p class="font-bold text-dark text-sm">${t.desc} ${!isIncome ? (t.scope === 'shared' ? '<span class="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded border border-slate-200 ml-2">Pareja</span>' : '<span class="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded border border-slate-200 ml-2">Personal</span>') : ''}</p>
+                            <p class="text-xs mt-1 text-slate-500">${dateStr} • <span class="font-bold ${t.payer === 'p1' ? 'text-indigo-600' : 'text-teal-600'}">${isIncome ? 'Ingresó' : 'Pagó'} ${payerName}</span></p>
                         </div>
                     </div>
-                    <div class="flex items-center gap-3">
-                        <div class="text-right">
-                            <p class="font-black ${isInc ? 'text-emerald-600' : 'text-dark'}">${isInc ? '+' : '-'}$${parseFloat(t.amount).toFixed(2)}</p>
-                            ${t.originalVES ? `<p class="text-[10px] text-slate-400 font-mono" title="Tasa: ${t.exchangeRate}">Bs ${parseFloat(t.originalVES).toFixed(2)}</p>` : ''}
-                        </div>
-                        <div class="flex-col gap-1 hidden group-hover:flex">
-                            <button class="btn-edit text-blue-500 hover:bg-blue-50 p-1.5 rounded" data-id="${t.id}"><i class="fa-solid fa-pen-to-square"></i></button>
-                            <button class="btn-delete text-red-500 hover:bg-red-50 p-1.5 rounded" data-id="${t.id}"><i class="fa-solid fa-trash"></i></button>
+                    <div class="text-right ml-4 flex flex-col items-end">
+                        <p class="font-black ${isIncome ? 'text-emerald-600' : 'text-slate-800'} text-lg">${isIncome ? '+' : '-'}$${parseFloat(t.amount).toFixed(2)}</p>
+                        ${t.originalCurrency === 'VES' ? `<p class="text-[10px] text-slate-400 mt-0.5">Bs. ${t.originalAmount.toFixed(2)}</p>` : ''}
+                        <div class="flex gap-2 mt-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100">
+                            <button onclick="editTransaction('${t.id}')" class="text-slate-400 hover:text-primary text-xs bg-white border border-slate-200 px-2 py-1 rounded shadow-sm"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="requestDelete('${t.id}')" class="text-slate-400 hover:text-danger text-xs bg-white border border-slate-200 px-2 py-1 rounded shadow-sm"><i class="fa-solid fa-trash"></i></button>
                         </div>
                     </div>
                 `;
-                list.appendChild(el);
+                listEl.appendChild(el);
             });
-
-            document.querySelectorAll('.btn-delete').forEach(btn => btn.addEventListener('click', (e) => { transactionToDelete = e.currentTarget.dataset.id; openModal('confirm-modal'); }));
-            document.querySelectorAll('.btn-edit').forEach(btn => btn.addEventListener('click', (e) => { editTransaction(e.currentTarget.dataset.id); }));
         }
 
-        // --- FORMULARIOS Y EVENTOS ---
-        function calculateConverted() {
-            const curr = document.getElementById('exp-currency').value;
-            const amt = parseFloat(document.getElementById('exp-amount').value) || 0;
-            const rate = parseFloat(document.getElementById('exp-rate').value) || 0;
-            if (curr === 'VES' && rate > 0) document.getElementById('converted-usd').innerText = `$${(amt/rate).toFixed(2)}`;
-            else document.getElementById('converted-usd').innerText = `$${amt.toFixed(2)}`;
+        function updateCategories() {
+            const type = document.querySelector('input[name="trans-type"]:checked').value;
+            const sel = document.getElementById('exp-category');
+            sel.innerHTML = '';
+            CATEGORIES[type].forEach(c => { const o = document.createElement('option'); o.value = c.val; o.innerText = c.text; sel.appendChild(o); });
+            if (type === 'expense') { document.getElementById('payer-label').innerText = '¿Quién lo pagó?'; document.getElementById('scope-container').classList.remove('hidden'); } 
+            else { document.getElementById('payer-label').innerText = '¿A quién ingresó?'; document.getElementById('scope-container').classList.add('hidden'); document.querySelector('input[value="individual"]').checked = true; }
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const catSelect = document.getElementById('exp-category');
-            for (const [cat, icon] of Object.entries(CATEGORIES)) { catSelect.innerHTML += `<option value="${cat}">${cat}</option>`; }
-            
-            document.querySelectorAll('input[name="trans-type"]').forEach(r => r.addEventListener('change', (e) => {
-                const isInc = e.target.value === 'income';
-                document.getElementById('scope-container').style.display = isInc ? 'none' : 'block';
-                document.getElementById('payer-label').innerText = isInc ? '¿Quién recibió el ingreso?' : '¿Quién pagó?';
-                if(isInc) document.querySelector('input[name="exp-scope"][value="individual"]').checked = true;
-            }));
-
-            document.getElementById('exp-currency').addEventListener('change', (e) => {
-                const isVES = e.target.value === 'VES';
-                document.getElementById('rate-container').classList.toggle('hidden', !isVES);
-                if(isVES && !document.getElementById('exp-rate').value && currentRates.bcv > 0) { document.getElementById('exp-rate').value = currentRates.bcv; }
-                calculateConverted();
-            });
-
-            document.getElementById('exp-amount').addEventListener('input', calculateConverted);
-            document.getElementById('exp-rate').addEventListener('input', calculateConverted);
-            document.getElementById('btn-use-bcv').addEventListener('click', () => { document.getElementById('exp-rate').value = currentRates.bcv; calculateConverted(); });
-            
-            document.getElementById('btn-open-add').addEventListener('click', () => {
-                document.getElementById('expense-form').reset();
-                document.getElementById('edit-id').value = '';
-                document.getElementById('linked-fixed-id').value = '';
-                
-                // Fecha por defecto: hoy en formato YYYY-MM-DD
-                let today = new Date();
-                document.getElementById('exp-date').value = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
-                
-                document.getElementById('rate-container').classList.add('hidden');
-                document.getElementById('scope-container').style.display = 'block';
-                document.getElementById('modal-title').innerText = 'Registrar Movimiento';
-                openModal('add-modal');
-            });
-            
-            document.getElementById('btn-close-add').addEventListener('click', () => closeModal('add-modal'));
-            document.getElementById('btn-settings').addEventListener('click', () => {
-                document.getElementById('set-p1-name').value = appState.settings.p1.name; document.getElementById('set-p1-amount').value = appState.settings.p1.target;
-                document.getElementById('set-p2-name').value = appState.settings.p2.name; document.getElementById('set-p2-amount').value = appState.settings.p2.target;
-                openModal('settings-modal');
-            });
-            document.getElementById('btn-close-settings').addEventListener('click', () => closeModal('settings-modal'));
-            
-            document.getElementById('btn-save-settings').addEventListener('click', async () => {
-                appState.settings.p1.name = document.getElementById('set-p1-name').value || 'P1';
-                appState.settings.p1.target = parseFloat(document.getElementById('set-p1-amount').value) || 0;
-                appState.settings.p2.name = document.getElementById('set-p2-name').value || 'P2';
-                appState.settings.p2.target = parseFloat(document.getElementById('set-p2-amount').value) || 0;
-                await setDoc(doc(db, 'cuentas_claras_config', 'ajustes'), appState.settings);
-                closeModal('settings-modal'); showToast('Ajustes guardados');
-            });
-
-            document.getElementById('btn-cancel-delete').addEventListener('click', () => { transactionToDelete = null; closeModal('confirm-modal'); });
-            document.getElementById('btn-confirm-delete').addEventListener('click', async () => {
-                if (transactionToDelete) {
-                    await deleteDoc(doc(db, 'cuentas_claras_transacciones', transactionToDelete));
-                    transactionToDelete = null; closeModal('confirm-modal'); showToast('Registro eliminado');
-                }
-            });
-
-            document.getElementById('btn-refresh-rates').addEventListener('click', fetchRates);
-            
-            document.getElementById('expense-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const type = document.querySelector('input[name="trans-type"]:checked').value;
-                const scope = type === 'income' ? 'individual' : document.querySelector('input[name="exp-scope"]:checked').value;
-                const curr = document.getElementById('exp-currency').value;
-                let amount = parseFloat(document.getElementById('exp-amount').value);
-                let originalVES = null, rate = null;
-                if (curr === 'VES') { rate = parseFloat(document.getElementById('exp-rate').value); if(rate > 0) { originalVES = amount; amount = amount / rate; } }
-                
-                const transData = {
-                    type, scope,
-                    description: document.getElementById('exp-desc').value,
-                    amount: amount.toFixed(2), originalVES, exchangeRate: rate,
-                    payer: document.querySelector('input[name="exp-payer"]:checked').value,
-                    category: document.getElementById('exp-category').value,
-                    date: document.getElementById('exp-date').value, // ESTO ES CLAVE: Guarda la fecha exacta escogida (YYYY-MM-DD)
-                    timestamp: new Date().toISOString(),
-                    linkedFixedId: document.getElementById('linked-fixed-id').value || null
-                };
-
-                const editId = document.getElementById('edit-id').value;
-                const docId = editId || ('trans_' + Date.now());
-                if (editId) { const oldT = appState.transactions.find(t => t.id === editId); if (oldT) transData.timestamp = oldT.timestamp; } 
-                
-                await setDoc(doc(db, 'cuentas_claras_transacciones', docId), transData);
-                closeModal('add-modal'); showToast('Guardado en la nube');
-            });
-
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('text-primary', 'border-primary', 'bg-white', 'shadow-sm'); b.classList.add('text-slate-500', 'border-transparent'); });
-                    e.currentTarget.classList.remove('text-slate-500', 'border-transparent'); e.currentTarget.classList.add('text-primary', 'border-primary', 'bg-white', 'shadow-sm');
-                    currentTab = e.currentTarget.dataset.tab;
-                    updateUI();
-                });
-            });
-
-            document.getElementById('prev-month').addEventListener('click', () => changeMonth(-1));
-            document.getElementById('next-month').addEventListener('click', () => changeMonth(1));
-            document.getElementById('month-selector').addEventListener('change', (e) => { selectedMonth = e.target.value; updateUI(); });
-        });
-
-        function changeMonth(delta) {
-            // Asegurarse de que el cambio de mes se haga bien sumando a la fecha actual y extrayendo YYYY-MM
-            let parts = selectedMonth.split('-');
-            let d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1 + delta, 1);
-            selectedMonth = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
-            updateUI();
-        }
+        function openAddModal() { document.getElementById('edit-id').value = ''; document.getElementById('expense-form').reset(); document.getElementById('exp-date').value = new Date().toISOString().split('T')[0]; updateCategories(); toggleRateInput(); document.getElementById('add-modal').classList.remove('hidden'); }
+        function closeAddModal() { document.getElementById('add-modal').classList.add('hidden'); }
 
         window.editTransaction = function(id) {
-            const t = appState.transactions.find(x => x.id === id);
-            if(!t) return;
+            const t = appState.transactions.find(x => x.id === id); if(!t) return;
             document.getElementById('edit-id').value = t.id;
-            document.getElementById('linked-fixed-id').value = t.linkedFixedId || '';
-            document.querySelector(`input[name="trans-type"][value="${t.type}"]`).checked = true;
-            document.getElementById('scope-container').style.display = t.type === 'income' ? 'none' : 'block';
+            document.querySelector(`input[value="${t.type}"]`).checked = true; updateCategories();
             document.querySelector(`input[name="exp-scope"][value="${t.scope}"]`).checked = true;
-            document.getElementById('exp-desc').value = t.description;
-            document.getElementById('exp-category').value = t.category;
-            
-            // Colocar la fecha real que tenía el gasto
-            document.getElementById('exp-date').value = t.date || t.timestamp.split('T')[0]; 
-            
-            document.querySelector(`input[name="exp-payer"][value="${t.payer}"]`).checked = true;
-            
-            if(t.originalVES) {
-                document.getElementById('exp-currency').value = 'VES';
-                document.getElementById('exp-amount').value = t.originalVES;
-                document.getElementById('exp-rate').value = t.exchangeRate;
-                document.getElementById('rate-container').classList.remove('hidden');
-            } else {
-                document.getElementById('exp-currency').value = 'USD';
-                document.getElementById('exp-amount').value = t.amount;
-                document.getElementById('rate-container').classList.add('hidden');
-            }
-            calculateConverted();
-            document.getElementById('modal-title').innerText = 'Editar Movimiento';
-            openModal('add-modal');
-        };
+            document.getElementById('exp-date').value = new Date(t.timestamp).toISOString().split('T')[0];
+            document.getElementById('exp-desc').value = t.desc; document.getElementById('exp-currency').value = t.originalCurrency || 'USD'; document.getElementById('exp-amount').value = t.originalAmount || t.amount;
+            if(t.originalCurrency === 'VES') document.getElementById('exp-rate').value = t.exchangeRate;
+            document.getElementById('exp-category').value = t.category; document.querySelector(`input[value="${t.payer}"]`).checked = true;
+            toggleRateInput(); document.getElementById('add-modal').classList.remove('hidden');
+        }
 
-        // Registro de Service Worker para PWA
-        if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW registration failed:', err)); }); }
+        async function handleTransactionSubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit-id').value;
+            const rawAmount = parseFloat(document.getElementById('exp-amount').value);
+            const currency = document.getElementById('exp-currency').value;
+            const rate = parseFloat(document.getElementById('exp-rate').value);
+            let finalUsd = rawAmount, appliedRate = null;
+            
+            if (currency === 'VES') { if (!rate || rate <= 0) return showToast('Ingresa una tasa válida', 'error'); finalUsd = rawAmount / rate; appliedRate = rate; }
+            const parts = document.getElementById('exp-date').value.split('-');
 
+            const data = {
+                type: document.querySelector('input[name="trans-type"]:checked').value,
+                scope: document.querySelector('input[name="trans-type"]:checked').value === 'income' ? 'individual' : document.querySelector('input[name="exp-scope"]:checked').value,
+                desc: document.getElementById('exp-desc').value, amount: finalUsd, originalAmount: rawAmount, originalCurrency: currency, exchangeRate: appliedRate,
+                category: document.getElementById('exp-category').value, payer: document.querySelector('input[name="exp-payer"]:checked').value,
+                timestamp: new Date(parts[0], parts[1]-1, parts[2], 12,0,0).getTime()
+            };
+
+            setCloudStatus('Guardando...', 'text-yellow-500');
+            try { await setDoc(doc(db, 'transacciones', id || 'trans_'+Date.now()), data); closeAddModal(); showToast('Guardado con éxito'); } 
+            catch(e) { console.error(e); showToast('Error al guardar', 'error'); setCloudStatus('Error', 'text-red-500'); }
+        }
+
+        window.requestDelete = function(id) { transactionToDelete = id; document.getElementById('confirm-modal').classList.remove('hidden'); }
+        function closeDeleteModal() { transactionToDelete = null; document.getElementById('confirm-modal').classList.add('hidden'); }
+        async function confirmDelete() {
+            setCloudStatus('Borrando...', 'text-yellow-500');
+            try { await deleteDoc(doc(db, 'transacciones', transactionToDelete)); closeDeleteModal(); showToast('Eliminado'); } 
+            catch(e) { showToast('Error al eliminar', 'error'); setCloudStatus('Error', 'text-red-500'); }
+        }
+
+        function openSettingsModal() { document.getElementById('set-p1-name').value = appState.settings.p1.name; document.getElementById('set-p1-amount').value = appState.settings.p1.target; document.getElementById('set-p2-name').value = appState.settings.p2.name; document.getElementById('set-p2-amount').value = appState.settings.p2.target; document.getElementById('settings-modal').classList.remove('hidden'); }
+        function closeSettingsModal() { document.getElementById('settings-modal').classList.add('hidden'); }
+        async function saveSettings() {
+            appState.settings.p1.name = document.getElementById('set-p1-name').value; appState.settings.p1.target = parseFloat(document.getElementById('set-p1-amount').value);
+            appState.settings.p2.name = document.getElementById('set-p2-name').value; appState.settings.p2.target = parseFloat(document.getElementById('set-p2-amount').value);
+            try { await setDoc(doc(db, 'configuracion', 'ajustes'), appState.settings); closeSettingsModal(); showToast('Configuración guardada'); } catch(e) {}
+        }
+
+        function showToast(msg, type='success') {
+            const div = document.createElement('div');
+            div.className = `${type === 'success' ? 'bg-emerald-500' : 'bg-danger'} text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 transform transition-all translate-x-full opacity-0`;
+            div.innerHTML = `<i class="fa-solid ${type==='success'?'fa-check':'fa-xmark'}"></i><span class="text-sm font-medium">${msg}</span>`;
+            document.getElementById('toast-container').appendChild(div);
+            requestAnimationFrame(() => div.classList.remove('translate-x-full', 'opacity-0'));
+            setTimeout(() => { div.classList.add('translate-x-full', 'opacity-0'); setTimeout(()=>div.remove(), 300); }, 3000);
+        }
+
+        // Registro del Service Worker para hacer la App Instalable (PWA)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                .then(reg => console.log('Service Worker registrado para instalación'))
+                .catch(err => console.log('Error registrando Service Worker', err));
+            });
+        }
     </script>
 </body>
 </html>
