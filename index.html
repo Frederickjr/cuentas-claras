@@ -293,7 +293,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection, collectionGroup } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getDatabase, ref as rtdbRef, onValue } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
 
         // =========================================================================================
         // TU CONFIGURACIÓN DE FIREBASE EXACTA
@@ -312,6 +313,7 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const rtdb = getDatabase(app);
         const auth = getAuth(app);
 
         // ESTADO GLOBAL DE LA APP
@@ -402,38 +404,128 @@
                 console.error("Error leyendo configuración:", err);
             });
 
-            // Escuchar tanto la colección principal como posibles colecciones alternativas para no perder ningún dato de Octubre/Noviembre
-            let mainDocs = [];
-            let backupDocs = [];
+            // Mapa global para unir los datos de TODAS las rutas anteriores y actuales sin perder ni un solo registro
+            const allSources = {
+                main: [],
+                legacyArtifacts: [],
+                collectionGroupTrans: [],
+                rtdbData: [],
+                localBackup: []
+            };
+
+            // 1. Revisar si quedaron datos en el almacenamiento local del navegador (teléfono/PC)
+            try {
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    const raw = localStorage.getItem(key);
+                    if (raw && (raw.includes('"amount"') || raw.includes('"transactions"'))) {
+                        const parsed = JSON.parse(raw);
+                        if (Array.isArray(parsed)) {
+                            allSources.localBackup.push(...parsed);
+                        } else if (parsed && Array.isArray(parsed.transactions)) {
+                            allSources.localBackup.push(...parsed.transactions);
+                        }
+                    }
+                }
+            } catch (e) {}
 
             const mergeAndRender = () => {
                 const combinedMap = new Map();
-                [...backupDocs, ...mainDocs].forEach(item => combinedMap.set(item.id, item));
+                const allItems = [
+                    ...allSources.localBackup,
+                    ...allSources.rtdbData,
+                    ...allSources.legacyArtifacts,
+                    ...allSources.collectionGroupTrans,
+                    ...allSources.main
+                ];
+
+                allItems.forEach((item, idx) => {
+                    if (!item || typeof item !== 'object') return;
+                    const id = item.id || ('rec_' + idx);
+                    combinedMap.set(id, { ...item, id });
+                });
+
                 appState.transactions = Array.from(combinedMap.values());
                 
-                // Si el mes seleccionado actual está vacío pero hay datos en otros meses, mostrar aviso útil
+                // Si hay transacciones en la base de datos pero el mes actual (ej. 2026-11) no coincide con el año de los registros (ej. 2024-10 o 2025-10), saltar automáticamente al último mes con datos
+                if (appState.transactions.length > 0 && !window.hasAutoSelectedMonth) {
+                    const currentMonthHasData = appState.transactions.some(t => {
+                        const d = t.date || t.timestamp || '';
+                        return d.startsWith(selectedMonth);
+                    });
+                    if (!currentMonthHasData) {
+                        const validDates = appState.transactions
+                            .map(t => (t.date || t.timestamp || '').slice(0, 7))
+                            .filter(d => /^\d{4}-\d{2}$/.test(d))
+                            .sort();
+                        if (validDates.length > 0) {
+                            selectedMonth = validDates[validDates.length - 1];
+                        }
+                    }
+                    window.hasAutoSelectedMonth = true;
+                }
+
                 updateUI();
                 setCloudStatus(`Sincronizado (${appState.transactions.length})`, 'emerald');
                 diagBanner.classList.add('hidden');
             };
 
+            // 2. Ruta actual en Firestore ('cuentas_claras_transacciones')
             const transactionsRef = collection(db, 'cuentas_claras_transacciones');
             onSnapshot(transactionsRef, (snapshot) => {
-                mainDocs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                allSources.main = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 mergeAndRender();
             }, (error) => {
-                console.error("Error leyendo transacciones:", error);
+                console.error("Error leyendo cuentas_claras_transacciones:", error);
                 setCloudStatus('Error de Permisos', 'red');
                 diagBanner.classList.remove('hidden');
-                diagText.innerText = `Firebase bloqueó la lectura en esta ventana (${error.code}). Al subir el archivo a tu GitHub funcionará con normalidad.`;
+                diagText.innerText = `Error de lectura en Firestore (${error.code}). Verifica las Reglas en Firebase Console.`;
             });
 
-            // Respaldo adicional por si algunos datos se guardaron bajo 'transactions'
+            // 3. Ruta original de la primera versión ('artifacts/default-app-id/public/data/transactions')
             try {
-                const altRef = collection(db, 'transactions');
-                onSnapshot(altRef, (snapshot) => {
+                const legacyRef = collection(db, 'artifacts', 'default-app-id', 'public', 'data', 'transactions');
+                onSnapshot(legacyRef, (snapshot) => {
                     if (!snapshot.empty) {
-                        backupDocs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                        allSources.legacyArtifacts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                        mergeAndRender();
+                    }
+                }, () => {});
+            } catch (e) {}
+
+            // 4. Búsqueda global en CUALQUIER subcolección llamada 'transactions' dentro de tu Firestore
+            try {
+                const groupQuery = collectionGroup(db, 'transactions');
+                onSnapshot(groupQuery, (snapshot) => {
+                    if (!snapshot.empty) {
+                        allSources.collectionGroupTrans = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                        mergeAndRender();
+                    }
+                }, () => {});
+            } catch (e) {}
+
+            // 5. Búsqueda en Realtime Database (tu URL cuentas-claras-b7f45-default-rtdb)
+            try {
+                const dbRef = rtdbRef(rtdb, '/');
+                onValue(dbRef, (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        const extracted = [];
+                        const extractTransactions = (obj) => {
+                            if (!obj || typeof obj !== 'object') return;
+                            if (obj.amount !== undefined && (obj.description !== undefined || obj.type !== undefined)) {
+                                extracted.push(obj);
+                                return;
+                            }
+                            Object.entries(obj).forEach(([k, v]) => {
+                                if (v && typeof v === 'object') {
+                                    if (v.amount !== undefined) extracted.push({ id: k, ...v });
+                                    else extractTransactions(v);
+                                }
+                            });
+                        };
+                        extractTransactions(data);
+                        allSources.rtdbData = extracted;
                         mergeAndRender();
                     }
                 }, () => {});
