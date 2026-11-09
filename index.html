@@ -173,7 +173,7 @@
                     </div>
                 </section>
 
-                <!-- NUEVA SECCIÓN: AHORROS ACUMULADOS Y BALANCE DE GASTOS POR CATEGORÍA -->
+                <!-- SECCIÓN: AHORROS ACUMULADOS Y BALANCE DE GASTOS POR CATEGORÍA -->
                 <section class="grid grid-cols-1 lg:grid-cols-3 gap-5">
                     <!-- Tarjeta de Ahorros (Alcancía) -->
                     <div class="bg-gradient-to-br from-emerald-600 to-teal-700 text-white rounded-2xl shadow-sm p-5 relative overflow-hidden flex flex-col justify-between">
@@ -287,6 +287,13 @@
                         <label class="flex-1 text-center cursor-pointer"><input type="radio" name="exp-scope" value="individual" class="peer sr-only"><div class="py-2 rounded-md peer-checked:bg-white peer-checked:shadow peer-checked:text-slate-800 font-bold text-sm text-slate-500"><i class="fa-solid fa-user mr-1"></i> Personal</div></label>
                     </div>
                 </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1" id="payer-label">¿Quién paga / Quién recibe?</label>
+                    <div class="flex bg-slate-100 p-1 rounded-lg">
+                        <label class="flex-1 text-center cursor-pointer"><input type="radio" name="exp-payer" value="p1" checked class="peer sr-only"><div class="py-2 rounded-md peer-checked:bg-white peer-checked:shadow peer-checked:text-indigo-600 font-bold text-sm text-slate-500 partner1-name-display">P1</div></label>
+                        <label class="flex-1 text-center cursor-pointer"><input type="radio" name="exp-payer" value="p2" class="peer sr-only"><div class="py-2 rounded-md peer-checked:bg-white peer-checked:shadow peer-checked:text-teal-600 font-bold text-sm text-slate-500 partner2-name-display">P2</div></label>
+                    </div>
+                </div>
                 <div><label class="block text-sm font-semibold text-slate-700 mb-1">Descripción</label><input type="text" id="exp-desc" required placeholder="Ej. Mercado, Pago Niñera, Quincena" class="w-full border border-slate-300 rounded-lg px-3 py-2.5"></div>
                 <div class="grid grid-cols-12 gap-3">
                     <div class="col-span-5"><label class="block text-sm font-semibold text-slate-700 mb-1">Moneda</label><select id="exp-currency" class="w-full border border-slate-300 rounded-lg px-2 py-2.5 font-bold"><option value="USD">USD ($)</option><option value="VES">VES (Bs)</option></select></div>
@@ -297,13 +304,6 @@
                         <div class="text-right text-xs mt-2 text-slate-500">Se guardará contablemente como: <span id="converted-usd" class="font-bold text-emerald-600 text-base">$0.00</span></div>
                     </div>
                     <div class="col-span-12"><label class="block text-sm font-semibold text-slate-700 mb-1">Categoría</label><select id="exp-category" class="w-full border border-slate-300 rounded-lg px-3 py-2.5 bg-white"></select></div>
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-1" id="payer-label">¿Quién paga / Quién recibe?</label>
-                    <div class="flex bg-slate-100 p-1 rounded-lg">
-                        <label class="flex-1 text-center cursor-pointer"><input type="radio" name="exp-payer" value="p1" checked class="peer sr-only"><div class="py-2 rounded-md peer-checked:bg-white peer-checked:shadow peer-checked:text-indigo-600 font-bold text-sm text-slate-500 partner1-name-display">P1</div></label>
-                        <label class="flex-1 text-center cursor-pointer"><input type="radio" name="exp-payer" value="p2" class="peer sr-only"><div class="py-2 rounded-md peer-checked:bg-white peer-checked:shadow peer-checked:text-teal-600 font-bold text-sm text-slate-500 partner2-name-display">P2</div></label>
-                    </div>
                 </div>
                 <div class="pt-4 pb-2"><button type="submit" class="w-full bg-dark hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl shadow-lg transition"><i class="fa-solid fa-cloud-arrow-up mr-2"></i> Guardar en la Nube</button></div>
             </form>
@@ -391,6 +391,7 @@
             { id: 'f9', name: 'Academia castañuelas', amount: 48, category: 'Academia castañuelas', matchCats: ['Academia castañuelas'], keywords: ['academia', 'castañuelas', 'castanuelas', 'flamenco'] }
         ];
 
+        // CATEGORÍAS DE GASTOS E INGRESOS PERSONALIZADAS POR PERSONA
         const CATEGORIES = {
             expense: [
                 { val: 'Mercado', text: 'Mercado / Comida' },
@@ -402,6 +403,7 @@
                 { val: 'Condominio', text: 'Condominio' },
                 { val: 'Gasolina', text: 'Gasolina' },
                 { val: 'Aseo personal', text: 'Aseo Personal' },
+                { val: 'Ropa / Calzado', text: 'Ropa / Calzado' },
                 { val: 'Fijo', text: 'Otro Gasto Fijo' },
                 { val: 'Hogar', text: 'Hogar / Reparaciones' },
                 { val: 'Salud', text: 'Salud / Farmacia' },
@@ -409,11 +411,17 @@
                 { val: 'Ahorro', text: 'Ahorro (Alcancía / Guardado)' },
                 { val: 'Otro', text: 'Otro Gasto' }
             ],
-            income: [
-                { val: 'Salario', text: 'Salario / Nómina' },
-                { val: 'Bono', text: 'Bonificación' },
-                { val: 'Negocio', text: 'Negocio Propio' },
-                { val: 'Otro', text: 'Otro Ingreso' }
+            income_p1: [ // Ingresos de Dougleisy
+                { val: 'Desván semana', text: 'Desván semana' },
+                { val: 'Eventos', text: 'Eventos' },
+                { val: 'Propina', text: 'Propina' },
+                { val: 'Otro', text: 'Otro Ingreso / Extra' }
+            ],
+            income_p2: [ // Ingresos de Frederick
+                { val: 'Gringoland', text: 'Gringoland' },
+                { val: 'Rubifactory', text: 'Rubifactory' },
+                { val: 'Minimal studio', text: 'Minimal studio' },
+                { val: 'Otro', text: 'Otro Ingreso / Extra' }
             ]
         };
 
@@ -523,6 +531,12 @@
 
             document.getElementById('expense-form').addEventListener('submit', handleTransactionSubmit);
             document.querySelectorAll('input[name="trans-type"]').forEach(el => el.addEventListener('change', updateCategories));
+            // Al cambiar quién paga/recibe, si está en modo Ingreso, actualiza las categorías de ingreso de esa persona
+            document.querySelectorAll('input[name="exp-payer"]').forEach(el => el.addEventListener('change', () => {
+                if (document.querySelector('input[name="trans-type"]:checked').value === 'income') {
+                    updateCategories();
+                }
+            }));
             document.getElementById('exp-currency').addEventListener('change', toggleRateInput);
             document.getElementById('exp-amount').addEventListener('input', calculateConverted);
             document.getElementById('exp-rate').addEventListener('input', calculateConverted);
@@ -712,7 +726,7 @@
             }
         }
 
-        // NUEVA FUNCIÓN: Balance y Radiografía de Gastos del Mes por Categoría
+        // Balance y Radiografía de Gastos del Mes por Categoría
         function renderCategoryBreakdown(monthTrans) {
             const container = document.getElementById('category-breakdown-list');
             const totalEl = document.getElementById('breakdown-total-spent');
@@ -768,7 +782,7 @@
             });
         }
 
-        // FUNCIÓN MEJORADA: Gastos Fijos con Barra de Progreso y Abonos Parciales
+        // Gastos Fijos con Barra de Progreso y Abonos Parciales
         function renderFixedExpenses(monthTrans) {
             const grid = document.getElementById('fixed-expenses-grid');
             const fixed = appState.settings.fixedExpenses || defaultFixedExpenses;
@@ -802,7 +816,7 @@
                     <div>
                         <div class="flex justify-between items-start gap-2 mb-1.5">
                             <div class="flex items-center gap-2">
-                                <i class="fa-solid ${isCompleted ? 'fa-circle-check text-emerald-500' : (paidAmount > 0 ? 'fa-Chart-pie text-indigo-500 fa-clock' : 'fa-regular fa-circle text-slate-300')} text-lg"></i>
+                                <i class="fa-solid ${isCompleted ? 'fa-circle-check text-emerald-500' : (paidAmount > 0 ? 'fa-clock text-indigo-500' : 'fa-regular fa-circle text-slate-300')} text-lg"></i>
                                 <span class="text-sm font-bold ${isCompleted ? 'text-slate-600 line-through' : 'text-dark'}">${item.name}</span>
                             </div>
                             <span class="text-xs font-black px-2 py-0.5 rounded-full ${isCompleted ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}">${percent.toFixed(0)}%</span>
@@ -936,11 +950,31 @@
 
         function updateCategories() {
             const type = document.querySelector('input[name="trans-type"]:checked').value;
+            const payer = document.querySelector('input[name="exp-payer"]:checked').value;
             const sel = document.getElementById('exp-category');
             sel.innerHTML = '';
-            CATEGORIES[type].forEach(c => { const o = document.createElement('option'); o.value = c.val; o.innerText = c.text; sel.appendChild(o); });
-            if (type === 'expense') { document.getElementById('payer-label').innerText = '¿Quién lo pagó / ahorró?'; document.getElementById('scope-container').classList.remove('hidden'); } 
-            else { document.getElementById('payer-label').innerText = '¿A quién ingresó?'; document.getElementById('scope-container').classList.add('hidden'); document.querySelector('input[value="individual"]').checked = true; }
+
+            if (type === 'expense') {
+                CATEGORIES.expense.forEach(c => {
+                    const o = document.createElement('option');
+                    o.value = c.val;
+                    o.innerText = c.text;
+                    sel.appendChild(o);
+                });
+                document.getElementById('payer-label').innerText = '¿Quién lo pagó / ahorró?';
+                document.getElementById('scope-container').classList.remove('hidden');
+            } else {
+                const incomeKey = payer === 'p1' ? 'income_p1' : 'income_p2';
+                CATEGORIES[incomeKey].forEach(c => {
+                    const o = document.createElement('option');
+                    o.value = c.val;
+                    o.innerText = c.text;
+                    sel.appendChild(o);
+                });
+                document.getElementById('payer-label').innerText = '¿A quién ingresó?';
+                document.getElementById('scope-container').classList.add('hidden');
+                document.querySelector('input[name="exp-scope"][value="individual"]').checked = true;
+            }
         }
 
         function openAddModal() { document.getElementById('edit-id').value = ''; document.getElementById('expense-form').reset(); document.getElementById('exp-date').value = new Date().toISOString().split('T')[0]; updateCategories(); toggleRateInput(); document.getElementById('add-modal').classList.remove('hidden'); }
@@ -949,20 +983,21 @@
         window.editTransaction = function(id) {
             const t = appState.transactions.find(x => x.id === id); if(!t) return;
             document.getElementById('edit-id').value = t.id;
-            document.querySelector(`input[name="trans-type"][value="${t.type}"]`).checked = true; updateCategories();
+            document.querySelector(`input[name="exp-payer"][value="${t.payer}"]`).checked = true;
+            document.querySelector(`input[name="trans-type"][value="${t.type}"]`).checked = true;
+            updateCategories();
             document.querySelector(`input[name="exp-scope"][value="${t.scope}"]`).checked = true;
             document.getElementById('exp-date').value = new Date(t.timestamp).toISOString().split('T')[0];
             document.getElementById('exp-desc').value = t.desc; document.getElementById('exp-currency').value = t.originalCurrency || 'USD'; document.getElementById('exp-amount').value = t.originalAmount || t.amount;
             if(t.originalCurrency === 'VES') document.getElementById('exp-rate').value = t.exchangeRate;
             
-            // Si la categoría guardada antes era "Fijo", asegurar que exista en el selector
+            // Si la categoría guardada antes era "Fijo" o "Salario", asegurar que exista en el selector al editar
             const catExists = Array.from(document.getElementById('exp-category').options).some(opt => opt.value === t.category);
             if (!catExists && t.category) {
                 const o = document.createElement('option'); o.value = t.category; o.innerText = t.category;
                 document.getElementById('exp-category').appendChild(o);
             }
             document.getElementById('exp-category').value = t.category;
-            document.querySelector(`input[name="exp-payer"][value="${t.payer}"]`).checked = true;
             toggleRateInput(); document.getElementById('add-modal').classList.remove('hidden');
         }
 
