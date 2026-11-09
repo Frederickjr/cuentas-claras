@@ -99,6 +99,7 @@
 
         <main class="flex-grow overflow-y-auto pb-24">
             <div class="max-w-6xl mx-auto px-4 py-6 space-y-6">
+                <!-- Selector de Mes -->
                 <div class="flex justify-between items-center bg-white p-3 rounded-2xl shadow-sm border border-slate-200">
                     <h2 class="text-sm font-bold text-slate-500 uppercase tracking-wide ml-2 hidden sm:block"><i class="fa-regular fa-calendar-days mr-2"></i> Balance del Mes</h2>
                     <div class="flex items-center gap-2 w-full sm:w-auto justify-center">
@@ -108,8 +109,9 @@
                     </div>
                 </div>
 
+                <!-- Tarjetas Principales -->
                 <section class="grid grid-cols-1 md:grid-cols-3 gap-5">
-                    <!-- Gastos Comunes -->
+                    <!-- Gastos Comunes + Arrastre -->
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
                         <div class="p-5 bg-gradient-to-r from-slate-50 to-white border-b border-slate-100 relative overflow-hidden">
                             <div class="absolute -right-4 -top-4 opacity-5"><i class="fa-solid fa-users text-8xl"></i></div>
@@ -120,10 +122,15 @@
                             </div>
                             <div class="w-full bg-slate-200 rounded-full h-2.5 mb-1 relative z-10"><div id="shared-progress" class="bg-primary h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div></div>
                         </div>
-                        <div class="p-5 flex-grow flex flex-col justify-center bg-slate-50/50">
+                        <div class="p-5 flex-grow flex flex-col justify-center bg-slate-50/50 space-y-2">
+                            <!-- Aviso de saldo arrastrado del mes anterior -->
+                            <div id="carryover-banner" class="hidden text-xs bg-indigo-50 border border-indigo-200 text-indigo-800 px-3 py-2 rounded-lg flex items-center gap-2">
+                                <i class="fa-solid fa-clock-rotate-left text-indigo-500"></i>
+                                <span id="carryover-text">Saldo anterior: $0.00</span>
+                            </div>
                             <div id="settlement-box" class="bg-orange-50 border border-orange-200 rounded-xl p-4 flex items-start gap-3 hidden">
                                 <i class="fa-solid fa-scale-unbalanced text-orange-500 text-xl mt-1"></i>
-                                <div><h4 class="text-sm font-bold text-orange-800">Ajuste de Cuentas</h4><p id="settlement-text" class="text-sm text-orange-700 mt-1">Calculando...</p></div>
+                                <div class="w-full"><h4 class="text-sm font-bold text-orange-800">Ajuste de Cuentas Total</h4><div id="settlement-text" class="text-sm text-orange-700 mt-1">Calculando...</div></div>
                             </div>
                             <div id="settlement-ok" class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center gap-3">
                                 <i class="fa-solid fa-check-circle text-emerald-500 text-xl"></i><p class="text-sm text-emerald-700 font-medium">Cuentas al día.</p>
@@ -135,10 +142,11 @@
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 relative overflow-hidden flex flex-col">
                         <div class="absolute -right-4 -top-4 opacity-5"><i class="fa-solid fa-circle-user text-8xl"></i></div>
                         <h3 class="text-sm font-bold text-indigo-900 uppercase tracking-wide mb-3 partner1-name relative z-10">Dougleisy</h3>
-                        <div class="space-y-3 text-sm relative z-10 flex-grow">
-                            <div class="flex justify-between border-b border-slate-50 pb-2"><span>Ingresos:</span><span class="font-bold text-emerald-600">+$<span id="p1-income">0.00</span></span></div>
-                            <div class="flex justify-between border-b border-slate-50 pb-2"><span>Aportó a Comunes:</span><span class="font-medium text-slate-800">-$<span id="p1-shared-paid">0.00</span></span></div>
-                            <div class="flex justify-between pb-1"><span>Gastos Personales:</span><span class="font-medium text-danger">-$<span id="p1-ind-paid">0.00</span></span></div>
+                        <div class="space-y-2.5 text-sm relative z-10 flex-grow">
+                            <div class="flex justify-between border-b border-slate-50 pb-1.5"><span>Ingresos:</span><span class="font-bold text-emerald-600">+$<span id="p1-income">0.00</span></span></div>
+                            <div class="flex justify-between border-b border-slate-50 pb-1.5"><span>Aportó a Comunes:</span><span class="font-medium text-slate-800">-$<span id="p1-shared-paid">0.00</span></span></div>
+                            <div class="flex justify-between border-b border-slate-50 pb-1.5"><span>Gastos Personales:</span><span class="font-medium text-danger">-$<span id="p1-ind-paid">0.00</span></span></div>
+                            <div class="flex justify-between pb-1 text-emerald-700 font-medium"><span><i class="fa-solid fa-piggy-bank mr-1"></i>Ahorrado (Mes):</span><span>$<span id="p1-saved-month">0.00</span></span></div>
                         </div>
                         <div class="mt-4 pt-3 border-t border-slate-100 relative z-10 bg-indigo-50/50 -mx-5 -mb-5 p-5">
                             <div class="flex justify-between items-center">
@@ -151,10 +159,11 @@
                     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 relative overflow-hidden flex flex-col">
                         <div class="absolute -right-4 -top-4 opacity-5"><i class="fa-regular fa-circle-user text-8xl"></i></div>
                         <h3 class="text-sm font-bold text-teal-900 uppercase tracking-wide mb-3 partner2-name relative z-10">Frederick</h3>
-                        <div class="space-y-3 text-sm relative z-10 flex-grow">
-                            <div class="flex justify-between border-b border-slate-50 pb-2"><span>Ingresos:</span><span class="font-bold text-emerald-600">+$<span id="p2-income">0.00</span></span></div>
-                            <div class="flex justify-between border-b border-slate-50 pb-2"><span>Aportó a Comunes:</span><span class="font-medium text-slate-800">-$<span id="p2-shared-paid">0.00</span></span></div>
-                            <div class="flex justify-between pb-1"><span>Gastos Personales:</span><span class="font-medium text-danger">-$<span id="p2-ind-paid">0.00</span></span></div>
+                        <div class="space-y-2.5 text-sm relative z-10 flex-grow">
+                            <div class="flex justify-between border-b border-slate-50 pb-1.5"><span>Ingresos:</span><span class="font-bold text-emerald-600">+$<span id="p2-income">0.00</span></span></div>
+                            <div class="flex justify-between border-b border-slate-50 pb-1.5"><span>Aportó a Comunes:</span><span class="font-medium text-slate-800">-$<span id="p2-shared-paid">0.00</span></span></div>
+                            <div class="flex justify-between border-b border-slate-50 pb-1.5"><span>Gastos Personales:</span><span class="font-medium text-danger">-$<span id="p2-ind-paid">0.00</span></span></div>
+                            <div class="flex justify-between pb-1 text-emerald-700 font-medium"><span><i class="fa-solid fa-piggy-bank mr-1"></i>Ahorrado (Mes):</span><span>$<span id="p2-saved-month">0.00</span></span></div>
                         </div>
                         <div class="mt-4 pt-3 border-t border-slate-100 relative z-10 bg-teal-50/50 -mx-5 -mb-5 p-5">
                             <div class="flex justify-between items-center">
@@ -164,17 +173,74 @@
                     </div>
                 </section>
 
+                <!-- NUEVA SECCIÓN: AHORROS ACUMULADOS Y BALANCE DE GASTOS POR CATEGORÍA -->
+                <section class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                    <!-- Tarjeta de Ahorros (Alcancía) -->
+                    <div class="bg-gradient-to-br from-emerald-600 to-teal-700 text-white rounded-2xl shadow-sm p-5 relative overflow-hidden flex flex-col justify-between">
+                        <div class="absolute -right-4 -bottom-4 opacity-10"><i class="fa-solid fa-piggy-bank text-9xl"></i></div>
+                        <div class="relative z-10">
+                            <div class="flex justify-between items-center mb-2">
+                                <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-100 flex items-center gap-2">
+                                    <i class="fa-solid fa-piggy-bank text-lg"></i> Fondo de Ahorros
+                                </h3>
+                                <span class="text-[10px] bg-white/20 px-2 py-0.5 rounded-full font-semibold">No cuenta como gasto</span>
+                            </div>
+                            <div class="text-3xl font-black mb-1">$<span id="total-savings-alltime">0.00</span></div>
+                            <p class="text-xs text-emerald-100 mb-4">Total Histórico Acumulado</p>
+                        </div>
+
+                        <div class="bg-white/10 backdrop-blur-sm rounded-xl p-3 space-y-2 text-xs relative z-10 border border-white/10">
+                            <div class="flex justify-between items-center border-b border-white/10 pb-1.5">
+                                <span class="text-emerald-100">Ahorrado este mes:</span>
+                                <span class="font-bold text-white text-sm">+$<span id="total-savings-month">0.00</span></span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span><span class="partner1-name">Dougleisy</span> (Histórico):</span>
+                                <span class="font-bold">$<span id="p1-savings-alltime">0.00</span></span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span><span class="partner2-name">Frederick</span> (Histórico):</span>
+                                <span class="font-bold">$<span id="p2-savings-alltime">0.00</span></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Balance / Distribución de Gastos del Mes -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 lg:col-span-2 flex flex-col">
+                        <div class="flex justify-between items-center mb-4">
+                            <div>
+                                <h3 class="text-base font-bold text-dark flex items-center gap-2">
+                                    <i class="fa-solid fa-chart-pie text-primary"></i> ¿En qué se va el dinero este mes?
+                                </h3>
+                                <p class="text-xs text-slate-500">Desglose de gastos mensuales por categoría (Comunes + Personales)</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-xs text-slate-400 block uppercase font-bold">Total Gastado</span>
+                                <span class="text-lg font-black text-dark">$<span id="breakdown-total-spent">0.00</span></span>
+                            </div>
+                        </div>
+                        <div id="category-breakdown-list" class="space-y-3 flex-grow justify-center flex flex-col">
+                            <!-- Se llena dinámicamente -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Checklist de Gastos Fijos con Barras de Progreso -->
                 <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col p-5">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-base font-bold text-dark flex items-center gap-2"><i class="fa-solid fa-list-check text-primary"></i> Checklist Fijos del Mes</h2>
-                        <span id="fixed-progress-text" class="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-md shadow-inner">0 / 0 pagados</span>
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
+                        <div>
+                            <h2 class="text-base font-bold text-dark flex items-center gap-2"><i class="fa-solid fa-list-check text-primary"></i> Checklist y Progreso de Gastos Fijos</h2>
+                            <p class="text-xs text-slate-500">Se suman automáticamente los pagos parciales o abonos del mes</p>
+                        </div>
+                        <span id="fixed-progress-text" class="text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-lg shadow-inner">0 / 0 completados</span>
                     </div>
                     <div id="fixed-expenses-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></div>
                 </section>
 
+                <!-- Historial de Transacciones -->
                 <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
                     <div class="px-5 py-4 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-slate-50">
-                        <h2 class="text-base font-bold text-dark">Historial de Transacciones</h2>
+                        <h2 class="text-base font-bold text-dark">Historial de Movimientos del Mes</h2>
                     </div>
                     <!-- Pestañas -->
                     <div class="flex gap-2 p-3 border-b border-slate-100 bg-slate-50/50 overflow-x-auto custom-scrollbar" id="tabs-container">
@@ -182,6 +248,7 @@
                         <button class="tab-btn px-4 py-2 rounded-lg text-sm font-bold transition-all text-slate-500 hover:bg-slate-100 border border-transparent whitespace-nowrap" data-tab="shared">Comunes</button>
                         <button class="tab-btn px-4 py-2 rounded-lg text-sm font-bold transition-all text-slate-500 hover:bg-slate-100 border border-transparent whitespace-nowrap partner1-name-display" data-tab="p1">Dougleisy</button>
                         <button class="tab-btn px-4 py-2 rounded-lg text-sm font-bold transition-all text-slate-500 hover:bg-slate-100 border border-transparent whitespace-nowrap partner2-name-display" data-tab="p2">Frederick</button>
+                        <button class="tab-btn px-4 py-2 rounded-lg text-sm font-bold transition-all text-slate-500 hover:bg-slate-100 border border-transparent whitespace-nowrap" data-tab="savings"><i class="fa-solid fa-piggy-bank text-emerald-600 mr-1"></i>Ahorros</button>
                     </div>
                     <div class="divide-y divide-slate-100" id="expenses-list"></div>
                 </section>
@@ -207,7 +274,7 @@
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 mb-1">Tipo de Movimiento</label>
                         <div class="flex bg-slate-100 p-1 rounded-lg">
-                            <label class="flex-1 text-center cursor-pointer"><input type="radio" name="trans-type" value="expense" checked class="peer sr-only"><div class="py-2 rounded-md peer-checked:bg-white peer-checked:shadow peer-checked:text-danger font-bold text-sm text-slate-500">Gasto</div></label>
+                            <label class="flex-1 text-center cursor-pointer"><input type="radio" name="trans-type" value="expense" checked class="peer sr-only"><div class="py-2 rounded-md peer-checked:bg-white peer-checked:shadow peer-checked:text-danger font-bold text-sm text-slate-500">Gasto / Ahorro</div></label>
                             <label class="flex-1 text-center cursor-pointer"><input type="radio" name="trans-type" value="income" class="peer sr-only"><div class="py-2 rounded-md peer-checked:bg-white peer-checked:shadow peer-checked:text-emerald-600 font-bold text-sm text-slate-500">Ingreso</div></label>
                         </div>
                     </div>
@@ -220,7 +287,7 @@
                         <label class="flex-1 text-center cursor-pointer"><input type="radio" name="exp-scope" value="individual" class="peer sr-only"><div class="py-2 rounded-md peer-checked:bg-white peer-checked:shadow peer-checked:text-slate-800 font-bold text-sm text-slate-500"><i class="fa-solid fa-user mr-1"></i> Personal</div></label>
                     </div>
                 </div>
-                <div><label class="block text-sm font-semibold text-slate-700 mb-1">Descripción</label><input type="text" id="exp-desc" required placeholder="Ej. Colegio, Quincena, Cena" class="w-full border border-slate-300 rounded-lg px-3 py-2.5"></div>
+                <div><label class="block text-sm font-semibold text-slate-700 mb-1">Descripción</label><input type="text" id="exp-desc" required placeholder="Ej. Mercado, Pago Niñera, Quincena" class="w-full border border-slate-300 rounded-lg px-3 py-2.5"></div>
                 <div class="grid grid-cols-12 gap-3">
                     <div class="col-span-5"><label class="block text-sm font-semibold text-slate-700 mb-1">Moneda</label><select id="exp-currency" class="w-full border border-slate-300 rounded-lg px-2 py-2.5 font-bold"><option value="USD">USD ($)</option><option value="VES">VES (Bs)</option></select></div>
                     <div class="col-span-7"><label class="block text-sm font-semibold text-slate-700 mb-1">Monto</label><input type="number" id="exp-amount" required step="0.01" min="0.01" placeholder="0.00" class="w-full border border-slate-300 rounded-lg px-3 py-2.5 font-bold text-lg"></div>
@@ -296,9 +363,13 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // ESTADO DE LA APLICACIÓN (Actualizado con los nuevos montos predeterminados)
+        // ESTADO DE LA APLICACIÓN
         let appState = {
-            settings: { p1: { name: 'Dougleisy', target: 202 }, p2: { name: 'Frederick', target: 337 } },
+            settings: { 
+                p1: { name: 'Dougleisy', target: 202 }, 
+                p2: { name: 'Frederick', target: 337 },
+                closedFixed: {} 
+            },
             transactions: []
         };
         
@@ -307,29 +378,42 @@
         let transactionToDelete = null;
         let selectedMonth = new Date().toISOString().slice(0, 7); 
         
-        // Checklist predefinida (Los montos de la imagen)
+        // Checklist predefinida con palabras clave y categorías para vincular abonos automáticamente
         const defaultFixedExpenses = [
-            { id: 'f1', name: 'Colegio', amount: 48, category: 'Fijo' },
-            { id: 'f2', name: 'Niñera', amount: 85, category: 'Fijo' },
-            { id: 'f3', name: 'Estacionamiento', amount: 15, category: 'Fijo' },
-            { id: 'f4', name: 'Internet', amount: 22, category: 'Fijo' },
-            { id: 'f5', name: 'Mercado mensual', amount: 280, category: 'Mercado' },
-            { id: 'f6', name: 'Condominio', amount: 10, category: 'Fijo' },
-            { id: 'f7', name: 'Gasolina', amount: 5, category: 'Otro' },
-            { id: 'f8', name: 'Aseo personal', amount: 25, category: 'Mercado' },
-            { id: 'f9', name: 'Academia castañuelas', amount: 48, category: 'Fijo' }
+            { id: 'f1', name: 'Colegio', amount: 48, category: 'Colegio', matchCats: ['Colegio'], keywords: ['colegio', 'mensualidad colegio'] },
+            { id: 'f2', name: 'Niñera', amount: 85, category: 'Niñera', matchCats: ['Niñera'], keywords: ['niñera', 'ninera', 'cuidadora'] },
+            { id: 'f3', name: 'Estacionamiento', amount: 15, category: 'Estacionamiento', matchCats: ['Estacionamiento'], keywords: ['estacionamiento', 'parking'] },
+            { id: 'f4', name: 'Internet', amount: 22, category: 'Internet', matchCats: ['Internet'], keywords: ['internet', 'fibra', 'wifi'] },
+            { id: 'f5', name: 'Mercado mensual', amount: 280, category: 'Mercado', matchCats: ['Mercado'], keywords: ['mercado', 'comida', 'supermercado', 'abasto', 'bodega', 'carniceria', 'verduras'] },
+            { id: 'f6', name: 'Condominio', amount: 10, category: 'Condominio', matchCats: ['Condominio'], keywords: ['condominio', 'junta de condominio'] },
+            { id: 'f7', name: 'Gasolina', amount: 5, category: 'Gasolina', matchCats: ['Gasolina'], keywords: ['gasolina', 'combustible'] },
+            { id: 'f8', name: 'Aseo personal', amount: 25, category: 'Aseo personal', matchCats: ['Aseo personal'], keywords: ['aseo', 'shampoo', 'jabon', 'desodorante', 'crema dental', 'papel higienico'] },
+            { id: 'f9', name: 'Academia castañuelas', amount: 48, category: 'Academia castañuelas', matchCats: ['Academia castañuelas'], keywords: ['academia', 'castañuelas', 'castanuelas', 'flamenco'] }
         ];
 
         const CATEGORIES = {
             expense: [
-                { val: 'Fijo', text: 'Gasto Fijo' }, { val: 'Mercado', text: 'Mercado / Comida' },
-                { val: 'Hogar', text: 'Hogar / Reparaciones' }, { val: 'Salud', text: 'Salud / Farmacia' },
-                { val: 'Ocio', text: 'Ocio / Salidas' }, { val: 'Ahorro', text: 'Ahorro (Guardado)' },
+                { val: 'Mercado', text: 'Mercado / Comida' },
+                { val: 'Niñera', text: 'Niñera' },
+                { val: 'Colegio', text: 'Colegio' },
+                { val: 'Academia castañuelas', text: 'Academia Castañuelas' },
+                { val: 'Internet', text: 'Internet' },
+                { val: 'Estacionamiento', text: 'Estacionamiento' },
+                { val: 'Condominio', text: 'Condominio' },
+                { val: 'Gasolina', text: 'Gasolina' },
+                { val: 'Aseo personal', text: 'Aseo Personal' },
+                { val: 'Fijo', text: 'Otro Gasto Fijo' },
+                { val: 'Hogar', text: 'Hogar / Reparaciones' },
+                { val: 'Salud', text: 'Salud / Farmacia' },
+                { val: 'Ocio', text: 'Ocio / Salidas' },
+                { val: 'Ahorro', text: 'Ahorro (Alcancía / Guardado)' },
                 { val: 'Otro', text: 'Otro Gasto' }
             ],
             income: [
-                { val: 'Salario', text: 'Salario / Nómina' }, { val: 'Bono', text: 'Bonificación' },
-                { val: 'Negocio', text: 'Negocio Propio' }, { val: 'Otro', text: 'Otro Ingreso' }
+                { val: 'Salario', text: 'Salario / Nómina' },
+                { val: 'Bono', text: 'Bonificación' },
+                { val: 'Negocio', text: 'Negocio Propio' },
+                { val: 'Otro', text: 'Otro Ingreso' }
             ]
         };
 
@@ -371,12 +455,17 @@
         function setupRealtimeListeners() {
             setCloudStatus('Conectando...', 'text-yellow-600');
             
-            // Listener de Configuraciones
+            // Listener de Configuraciones (Misma ruta original: 'configuracion', 'ajustes')
             const settingsRef = doc(db, 'configuracion', 'ajustes');
             onSnapshot(settingsRef, (docSnap) => {
                 if (docSnap.exists()) {
-                    appState.settings = docSnap.data();
-                    if(!appState.settings.fixedExpenses) appState.settings.fixedExpenses = defaultFixedExpenses;
+                    const data = docSnap.data();
+                    appState.settings = {
+                        ...appState.settings,
+                        ...data,
+                        fixedExpenses: defaultFixedExpenses,
+                        closedFixed: data.closedFixed || {}
+                    };
                 } else {
                     appState.settings.fixedExpenses = defaultFixedExpenses;
                     setDoc(settingsRef, appState.settings);
@@ -384,7 +473,7 @@
                 updateUI();
             });
 
-            // Listener de Transacciones
+            // Listener de Transacciones (Misma ruta original: 'transacciones')
             const transactionsRef = collection(db, 'transacciones');
             onSnapshot(transactionsRef, (snapshot) => {
                 appState.transactions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -420,7 +509,11 @@
             icon.className = `fa-solid fa-cloud ${colorClass}`;
         }
 
+        let eventsInitialized = false;
         function setupEventListeners() {
+            if (eventsInitialized) return;
+            eventsInitialized = true;
+
             document.getElementById('btn-open-add').addEventListener('click', openAddModal);
             document.getElementById('btn-close-add').addEventListener('click', closeAddModal);
             document.getElementById('btn-settings').addEventListener('click', openSettingsModal);
@@ -437,13 +530,14 @@
             document.getElementById('btn-use-usdt').addEventListener('click', () => { document.getElementById('exp-rate').value = currentRates.paralelo; calculateConverted(); });
 
             document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', (e) => {
-                currentTab = e.target.dataset.tab;
+                const targetBtn = e.currentTarget;
+                currentTab = targetBtn.dataset.tab;
                 document.querySelectorAll('.tab-btn').forEach(b => {
                     b.classList.remove('text-primary', 'border-primary', 'bg-white', 'shadow-sm');
                     b.classList.add('text-slate-500', 'border-transparent', 'hover:bg-slate-100');
                 });
-                e.target.classList.add('text-primary', 'border-primary', 'bg-white', 'shadow-sm');
-                e.target.classList.remove('text-slate-500', 'border-transparent', 'hover:bg-slate-100');
+                targetBtn.classList.add('text-primary', 'border-primary', 'bg-white', 'shadow-sm');
+                targetBtn.classList.remove('text-slate-500', 'border-transparent', 'hover:bg-slate-100');
                 updateUI();
             }));
 
@@ -479,30 +573,74 @@
             else document.getElementById('converted-usd').innerText = `$${amt.toFixed(2)}`;
         }
 
-        function updateUI() {
-            const currentMonthTransactions = appState.transactions.filter(t => new Date(t.timestamp).toISOString().slice(0,7) === selectedMonth);
+        function getTransactionMonth(t) {
+            return new Date(t.timestamp).toISOString().slice(0, 7);
+        }
 
+        function updateUI() {
+            // 1. Filtrar transacciones del mes seleccionado y de meses anteriores
+            const currentMonthTransactions = appState.transactions.filter(t => getTransactionMonth(t) === selectedMonth);
+            const previousMonthsTransactions = appState.transactions.filter(t => getTransactionMonth(t) < selectedMonth);
+
+            // Actualizar nombres
             document.querySelectorAll('.partner1-name').forEach(el => el.innerText = appState.settings.p1.name);
             document.querySelectorAll('.partner2-name').forEach(el => el.innerText = appState.settings.p2.name);
             document.querySelectorAll('.partner1-name-display').forEach(el => el.innerText = appState.settings.p1.name);
             document.querySelectorAll('.partner2-name-display').forEach(el => el.innerText = appState.settings.p2.name);
 
             const totalTarget = appState.settings.p1.target + appState.settings.p2.target;
-            const p1Percent = totalTarget > 0 ? (appState.settings.p1.target / totalTarget) * 100 : 0;
-            const p2Percent = totalTarget > 0 ? (appState.settings.p2.target / totalTarget) * 100 : 0;
+            const p1Percent = totalTarget > 0 ? (appState.settings.p1.target / totalTarget) * 100 : 50;
 
+            // 2. Calcular Arrastre de Meses Anteriores (Excluyendo Ahorros)
+            let prevP1Shared = 0, prevP2Shared = 0;
+            previousMonthsTransactions.forEach(t => {
+                const amt = parseFloat(t.amount) || 0;
+                if (t.type === 'expense' && t.category !== 'Ahorro' && t.scope === 'shared') {
+                    t.payer === 'p1' ? prevP1Shared += amt : prevP2Shared += amt;
+                }
+            });
+            const prevTotalShared = prevP1Shared + prevP2Shared;
+            const prevP1Duty = prevTotalShared * (p1Percent / 100);
+            const carryOverP1Balance = prevP1Shared - prevP1Duty; // Positivo: P1 pagó de más en meses anteriores (tiene saldo a favor)
+
+            // 3. Calcular Movimientos del Mes Actual (Separando Ahorros de Gastos)
             let p1Shared = 0, p2Shared = 0, p1Ind = 0, p2Ind = 0, p1Inc = 0, p2Inc = 0;
+            let p1SavedMonth = 0, p2SavedMonth = 0;
 
             currentMonthTransactions.forEach(t => {
-                const amt = parseFloat(t.amount);
+                const amt = parseFloat(t.amount) || 0;
                 if (t.type === 'expense') {
-                    if (t.scope === 'shared') { t.payer === 'p1' ? p1Shared += amt : p2Shared += amt; } 
-                    else { t.payer === 'p1' ? p1Ind += amt : p2Ind += amt; }
+                    if (t.category === 'Ahorro') {
+                        // El ahorro se separa para no distorsionar los gastos comunes
+                        t.payer === 'p1' ? p1SavedMonth += amt : p2SavedMonth += amt;
+                    } else if (t.scope === 'shared') {
+                        t.payer === 'p1' ? p1Shared += amt : p2Shared += amt;
+                    } else {
+                        t.payer === 'p1' ? p1Ind += amt : p2Ind += amt;
+                    }
                 } else if (t.type === 'income') {
                     t.payer === 'p1' ? p1Inc += amt : p2Inc += amt;
                 }
             });
 
+            // 4. Calcular Ahorro Histórico Total (Todos los meses)
+            let p1SavedAllTime = 0, p2SavedAllTime = 0;
+            appState.transactions.forEach(t => {
+                if (t.type === 'expense' && t.category === 'Ahorro') {
+                    const amt = parseFloat(t.amount) || 0;
+                    t.payer === 'p1' ? p1SavedAllTime += amt : p2SavedAllTime += amt;
+                }
+            });
+
+            // Actualizar UI de Ahorros
+            document.getElementById('p1-saved-month').innerText = p1SavedMonth.toFixed(2);
+            document.getElementById('p2-saved-month').innerText = p2SavedMonth.toFixed(2);
+            document.getElementById('total-savings-month').innerText = (p1SavedMonth + p2SavedMonth).toFixed(2);
+            document.getElementById('p1-savings-alltime').innerText = p1SavedAllTime.toFixed(2);
+            document.getElementById('p2-savings-alltime').innerText = p2SavedAllTime.toFixed(2);
+            document.getElementById('total-savings-alltime').innerText = (p1SavedAllTime + p2SavedAllTime).toFixed(2);
+
+            // Actualizar UI de Gastos Comunes y Tarjetas Personales
             const totalShared = p1Shared + p2Shared;
             document.getElementById('shared-spent').innerText = totalShared.toFixed(2);
             document.getElementById('shared-target').innerText = totalTarget.toFixed(2);
@@ -512,208 +650,280 @@
             document.getElementById('p1-income').innerText = p1Inc.toFixed(2);
             document.getElementById('p1-shared-paid').innerText = p1Shared.toFixed(2);
             document.getElementById('p1-ind-paid').innerText = p1Ind.toFixed(2);
-            const p1Avail = p1Inc - p1Shared - p1Ind;
+            // El dinero disponible libre descuenta lo pagado y lo apartado en la alcancía
+            const p1Avail = p1Inc - p1Shared - p1Ind - p1SavedMonth;
             document.getElementById('p1-available').innerText = p1Avail.toFixed(2);
-            document.getElementById('p1-available').className = p1Avail < 0 ? 'text-danger' : 'text-indigo-700';
+            document.getElementById('p1-available').className = p1Avail < 0 ? 'text-2xl font-bold text-danger' : 'text-2xl font-bold text-indigo-700';
 
             document.getElementById('p2-income').innerText = p2Inc.toFixed(2);
             document.getElementById('p2-shared-paid').innerText = p2Shared.toFixed(2);
             document.getElementById('p2-ind-paid').innerText = p2Ind.toFixed(2);
-            const p2Avail = p2Inc - p2Shared - p2Ind;
+            const p2Avail = p2Inc - p2Shared - p2Ind - p2SavedMonth;
             document.getElementById('p2-available').innerText = p2Avail.toFixed(2);
-            document.getElementById('p2-available').className = p2Avail < 0 ? 'text-danger' : 'text-teal-700';
+            document.getElementById('p2-available').className = p2Avail < 0 ? 'text-2xl font-bold text-danger' : 'text-2xl font-bold text-teal-700';
 
-            calculateSettlement(totalShared, p1Shared, p1Percent);
+            calculateSettlement(totalShared, p1Shared, p1Percent, carryOverP1Balance);
+            renderCategoryBreakdown(currentMonthTransactions);
             renderFixedExpenses(currentMonthTransactions);
             renderTransactionsList(currentMonthTransactions);
         }
 
-        function calculateSettlement(totalShared, p1Paid, p1Percent) {
-            const box = document.getElementById('settlement-box'), okBox = document.getElementById('settlement-ok'), msg = document.getElementById('settlement-text');
-            if (totalShared === 0) { box.classList.add('hidden'); okBox.classList.remove('hidden'); return; }
-            
-            const p1Duty = totalShared * (p1Percent / 100); 
-            const p1Balance = p1Paid - p1Duty; 
-            
-            if (Math.abs(p1Balance) < 0.1) { box.classList.add('hidden'); okBox.classList.remove('hidden'); return; }
-            box.classList.remove('hidden'); okBox.classList.add('hidden');
+        function calculateSettlement(totalShared, p1Paid, p1Percent, carryOverP1Balance) {
+            const box = document.getElementById('settlement-box');
+            const okBox = document.getElementById('settlement-ok');
+            const msg = document.getElementById('settlement-text');
+            const carryBanner = document.getElementById('carryover-banner');
+            const carryText = document.getElementById('carryover-text');
 
-            if (p1Balance > 0) {
-                msg.innerHTML = `<span class="font-semibold">${appState.settings.p2.name}</span> debe transferir a <span class="font-semibold">${appState.settings.p1.name}</span>:<br/><span class="text-xl font-black text-orange-600 block mt-1">$${Math.abs(p1Balance).toFixed(2)}</span>`;
+            // Mostrar banner si existe saldo arrastrado del mes anterior
+            if (Math.abs(carryOverP1Balance) >= 0.1) {
+                carryBanner.classList.remove('hidden');
+                if (carryOverP1Balance > 0) {
+                    carryText.innerHTML = `Mes anterior: <b>${appState.settings.p1.name}</b> abonó <b>+$${carryOverP1Balance.toFixed(2)}</b> a favor`;
+                } else {
+                    carryText.innerHTML = `Mes anterior: <b>${appState.settings.p2.name}</b> abonó <b>+$${Math.abs(carryOverP1Balance).toFixed(2)}</b> a favor`;
+                }
             } else {
-                msg.innerHTML = `<span class="font-semibold">${appState.settings.p1.name}</span> debe transferir a <span class="font-semibold">${appState.settings.p2.name}</span>:<br/><span class="text-xl font-black text-orange-600 block mt-1">$${Math.abs(p1Balance).toFixed(2)}</span>`;
+                carryBanner.classList.add('hidden');
+            }
+
+            const p1DutyThisMonth = totalShared * (p1Percent / 100); 
+            const p1BalanceThisMonth = p1Paid - p1DutyThisMonth; 
+            
+            // Balance total sumando el saldo a favor/en contra del mes anterior
+            const finalP1Balance = p1BalanceThisMonth + carryOverP1Balance;
+
+            if (Math.abs(finalP1Balance) < 0.1) { 
+                box.classList.add('hidden'); 
+                okBox.classList.remove('hidden'); 
+                return; 
+            }
+            box.classList.remove('hidden'); 
+            okBox.classList.add('hidden');
+
+            const breakdownHtml = Math.abs(carryOverP1Balance) >= 0.1 
+                ? `<span class="text-[11px] text-orange-700/80 block mt-1">Mes actual: $${Math.abs(p1BalanceThisMonth).toFixed(2)} ${ (p1BalanceThisMonth >= 0 && carryOverP1Balance >= 0) || (p1BalanceThisMonth < 0 && carryOverP1Balance < 0) ? '+' : '-' } Arrastre: $${Math.abs(carryOverP1Balance).toFixed(2)}</span>` 
+                : '';
+
+            if (finalP1Balance > 0) {
+                msg.innerHTML = `<span class="font-semibold">${appState.settings.p2.name}</span> tiene pendiente abonar / cubrir a <span class="font-semibold">${appState.settings.p1.name}</span>:<br/><span class="text-xl font-black text-orange-600 block mt-0.5">$${Math.abs(finalP1Balance).toFixed(2)}</span>${breakdownHtml}`;
+            } else {
+                msg.innerHTML = `<span class="font-semibold">${appState.settings.p1.name}</span> tiene pendiente abonar / cubrir a <span class="font-semibold">${appState.settings.p2.name}</span>:<br/><span class="text-xl font-black text-orange-600 block mt-0.5">$${Math.abs(finalP1Balance).toFixed(2)}</span>${breakdownHtml}`;
             }
         }
 
+        // NUEVA FUNCIÓN: Balance y Radiografía de Gastos del Mes por Categoría
+        function renderCategoryBreakdown(monthTrans) {
+            const container = document.getElementById('category-breakdown-list');
+            const totalEl = document.getElementById('breakdown-total-spent');
+            container.innerHTML = '';
+
+            const expensesOnly = monthTrans.filter(t => t.type === 'expense' && t.category !== 'Ahorro');
+            const totalSpent = expensesOnly.reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
+            totalEl.innerText = totalSpent.toFixed(2);
+
+            if (totalSpent === 0) {
+                container.innerHTML = `<div class="text-center text-slate-400 text-sm py-6">Aún no hay gastos registrados en este mes.</div>`;
+                return;
+            }
+
+            // Agrupar por categoría inteligente (si es "Fijo", revisamos el nombre para saber qué fijo es)
+            const groups = {};
+            expensesOnly.forEach(t => {
+                let label = t.category || 'Otro';
+                if (label === 'Fijo') {
+                    const descLower = (t.desc || '').toLowerCase();
+                    const matchedFixed = defaultFixedExpenses.find(f => f.keywords.some(k => descLower.includes(k)));
+                    if (matchedFixed) label = matchedFixed.name;
+                    else label = 'Gastos Fijos';
+                } else if (label === 'Mercado') {
+                    label = 'Mercado / Comida';
+                }
+                groups[label] = (groups[label] || 0) + (parseFloat(t.amount) || 0);
+            });
+
+            const sortedCategories = Object.entries(groups)
+                .map(([name, amount]) => ({ name, amount, percent: (amount / totalSpent) * 100 }))
+                .sort((a, b) => b.amount - a.amount);
+
+            const colors = ['bg-primary', 'bg-rose-500', 'bg-amber-500', 'bg-teal-500', 'bg-purple-500', 'bg-blue-500', 'bg-slate-500'];
+
+            sortedCategories.forEach((cat, idx) => {
+                const barColor = colors[idx % colors.length];
+                const row = document.createElement('div');
+                row.className = 'space-y-1';
+                row.innerHTML = `
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="font-bold text-slate-700">${cat.name}</span>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-dark">$${cat.amount.toFixed(2)}</span>
+                            <span class="text-[10px] font-bold bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded w-12 text-right">${cat.percent.toFixed(1)}%</span>
+                        </div>
+                    </div>
+                    <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                        <div class="${barColor} h-2 rounded-full transition-all duration-500" style="width: ${cat.percent}%"></div>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        // FUNCIÓN MEJORADA: Gastos Fijos con Barra de Progreso y Abonos Parciales
         function renderFixedExpenses(monthTrans) {
             const grid = document.getElementById('fixed-expenses-grid');
-            const fixed = appState.settings.fixedExpenses;
+            const fixed = appState.settings.fixedExpenses || defaultFixedExpenses;
+            const closedMap = (appState.settings.closedFixed && appState.settings.closedFixed[selectedMonth]) || {};
             grid.innerHTML = '';
-            let paidCount = 0;
+            let completedCount = 0;
 
             fixed.forEach(item => {
-                // LÓGICA INTELIGENTE DE VINCULACIÓN (Por Categoría y Descripción)
-                const relatedTrans = monthTrans.filter(t => {
-                    // Ignorar si no es un gasto compartido
-                    if (t.type !== 'expense' || t.scope !== 'shared') return false;
-                    if (t.isCompletionMarker && t.desc === item.name) return true;
-                    
-                    const tDesc = t.desc.toLowerCase().trim();
-                    const iName = item.name.toLowerCase().trim();
-                    const tCat = t.category;
-
-                    // 1. Exacto o incluido en la descripción (ej. "Pago niñera semana 1" vincula con "Niñera")
-                    if (tDesc.includes(iName)) return true;
-
-                    // 2. Por categoría (Atrapará automáticamente lo que ya tenías registrado)
-                    if (iName === 'mercado mensual' && tCat === 'Mercado') return true;
-                    if (iName === 'niñera' && tCat === 'Niñera') return true;
-                    if (iName === 'internet' && tCat === 'Internet') return true;
-                    if (iName === 'estacionamiento' && tCat === 'Estacionamiento') return true;
-                    if (iName === 'colegio' && tCat === 'Colegio') return true;
-                    if (iName === 'condominio' && tCat === 'Condominio') return true;
-                    if (iName === 'gasolina' && tCat === 'Vehiculo') return true;
-                    if (iName === 'aseo personal' && tCat === 'Aseo') return true;
-
-                    return false;
+                // Buscar todas las transacciones del mes que correspondan a este gasto fijo (por categoría o por palabra clave en la descripción)
+                const matchingTrans = monthTrans.filter(t => {
+                    if (t.type !== 'expense') return false;
+                    const descLower = (t.desc || '').toLowerCase();
+                    const catMatch = item.matchCats && item.matchCats.includes(t.category);
+                    const exactName = descLower === item.name.toLowerCase();
+                    const keywordMatch = item.keywords && item.keywords.some(k => descLower.includes(k));
+                    return catMatch || exactName || keywordMatch;
                 });
-                
-                const sumPaid = relatedTrans.reduce((acc, t) => acc + (parseFloat(t.amount) || 0), 0);
-                
-                const isManuallyCompleted = relatedTrans.some(t => t.isCompletionMarker);
-                const isFullyPaid = sumPaid >= item.amount || isManuallyCompleted;
 
-                if (isFullyPaid) paidCount++;
+                const paidAmount = matchingTrans.reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
+                const isManuallyClosed = !!closedMap[item.id];
+                const isCompleted = paidAmount >= (item.amount - 0.05) || isManuallyClosed;
+                if (isCompleted) completedCount++;
+
+                const percent = Math.min((paidAmount / item.amount) * 100, 100);
+                const remaining = Math.max(item.amount - paidAmount, 0);
 
                 const el = document.createElement('div');
-                if (isFullyPaid) {
-                    el.className = 'border border-emerald-200 bg-emerald-50 rounded-xl p-3 flex flex-col gap-2 opacity-75 shadow-sm';
-                    el.innerHTML = `
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <i class="fa-solid fa-circle-check text-emerald-500 text-xl"></i>
-                                <div>
-                                    <p class="text-sm font-bold text-slate-500 line-through">${item.name}</p>
-                                    <p class="text-[10px] uppercase text-emerald-600 font-bold mt-0.5">Completado</p>
-                                </div>
+                el.className = `border rounded-xl p-3.5 flex flex-col justify-between shadow-sm transition-all ${isCompleted ? 'border-emerald-200 bg-emerald-50/70' : 'border-slate-200 bg-white hover:border-indigo-200'}`;
+                
+                el.innerHTML = `
+                    <div>
+                        <div class="flex justify-between items-start gap-2 mb-1.5">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid ${isCompleted ? 'fa-circle-check text-emerald-500' : (paidAmount > 0 ? 'fa-Chart-pie text-indigo-500 fa-clock' : 'fa-regular fa-circle text-slate-300')} text-lg"></i>
+                                <span class="text-sm font-bold ${isCompleted ? 'text-slate-600 line-through' : 'text-dark'}">${item.name}</span>
                             </div>
-                            <div class="font-black text-slate-400 text-sm">$${sumPaid.toFixed(2)} <span class="text-[10px] font-normal">/ $${item.amount}</span></div>
+                            <span class="text-xs font-black px-2 py-0.5 rounded-full ${isCompleted ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}">${percent.toFixed(0)}%</span>
                         </div>
-                    `;
-                } else {
-                    const percent = Math.min((sumPaid / item.amount) * 100, 100);
-                    const remaining = Math.max(item.amount - sumPaid, 0).toFixed(2);
-
-                    el.className = 'border border-slate-200 bg-white rounded-xl p-3 flex flex-col gap-2 shadow-sm transition-all hover:border-primary/50';
-                    el.innerHTML = `
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <i class="fa-regular fa-circle text-slate-300 text-xl"></i>
-                                <div>
-                                    <p class="text-sm font-bold text-dark">${item.name}</p>
-                                    <p class="text-[10px] text-slate-500 mt-0.5">En progreso</p>
-                                </div>
-                            </div>
-                            <div class="text-right">
-                                <span class="font-black text-dark text-sm">$${sumPaid.toFixed(2)}</span>
-                                <span class="text-[10px] text-slate-500 block">de $${item.amount}</span>
-                            </div>
+                        <div class="flex justify-between text-xs text-slate-500 mb-1.5">
+                            <span>Abonado: <b class="text-dark">$${paidAmount.toFixed(2)}</b></span>
+                            <span>Meta: <b>$${item.amount}</b></span>
                         </div>
-                        <!-- Barra de progreso -->
-                        <div class="w-full bg-slate-100 rounded-full h-1.5 mt-1">
-                            <div class="bg-primary h-1.5 rounded-full transition-all duration-500" style="width: ${percent}%"></div>
+                        <div class="w-full bg-slate-200 rounded-full h-2 mb-3 overflow-hidden">
+                            <div class="${isCompleted ? 'bg-emerald-500' : 'bg-primary'} h-2 rounded-full transition-all duration-500" style="width: ${percent}%"></div>
                         </div>
-                        <!-- Botones de Acción -->
-                        <div class="flex justify-between items-center mt-2 pt-2 border-t border-slate-50">
-                            <button class="btn-mark-complete text-[11px] font-medium text-slate-400 hover:text-emerald-500 flex items-center gap-1 transition p-1" data-name="${item.name}">
+                    </div>
+                    <div class="flex items-center justify-between gap-2 pt-1 border-t border-slate-100">
+                        ${!isCompleted ? `
+                            <button type="button" class="btn-abonar flex-1 bg-indigo-50 hover:bg-indigo-100 text-primary text-xs font-bold py-1.5 px-2.5 rounded-lg transition flex items-center justify-center gap-1">
+                                <i class="fa-solid fa-plus text-[10px]"></i> Abonar ($${remaining.toFixed(2)})
+                            </button>
+                            <button type="button" class="btn-cerrar text-[11px] text-slate-400 hover:text-emerald-600 font-semibold px-2 py-1.5 rounded-lg hover:bg-emerald-50 transition" title="Dar por completado este mes aunque se haya gastado menos">
                                 <i class="fa-solid fa-check"></i> Cerrar
                             </button>
-                            <button class="btn-add-payment bg-primary hover:bg-indigo-600 text-white text-xs px-3 py-1.5 rounded-lg flex items-center gap-1 shadow-sm transition" data-name="${item.name}" data-remaining="${remaining}" data-category="${item.category}">
-                                <i class="fa-solid fa-plus"></i> Abono
-                            </button>
-                        </div>
-                    `;
+                        ` : `
+                            <span class="text-[11px] font-bold text-emerald-600 flex items-center gap-1">
+                                <i class="fa-solid fa-check-double"></i> ${isManuallyClosed && paidAmount < item.amount ? 'Cerrado manualmente' : 'Meta cumplida'}
+                            </span>
+                            <div class="flex gap-1">
+                                <button type="button" class="btn-abonar text-[11px] text-indigo-600 hover:underline font-semibold px-1.5 py-0.5">+ Extra</button>
+                                ${isManuallyClosed ? `<button type="button" class="btn-reabrir text-[11px] text-slate-400 hover:text-danger px-1.5 py-0.5" title="Reabrir"><i class="fa-solid fa-rotate-left"></i></button>` : ''}
+                            </div>
+                        `}
+                    </div>
+                `;
+
+                const btnAbonar = el.querySelector('.btn-abonar');
+                if (btnAbonar) {
+                    btnAbonar.onclick = () => {
+                        openAddModal();
+                        document.getElementById('exp-desc').value = item.name;
+                        document.getElementById('exp-amount').value = remaining > 0 ? remaining.toFixed(2) : '';
+                        document.getElementById('exp-currency').value = 'USD';
+                        document.querySelector('input[name="trans-type"][value="expense"]').checked = true;
+                        updateCategories();
+                        document.querySelector('input[name="exp-scope"][value="shared"]').checked = true;
+                        document.getElementById('exp-category').value = item.category;
+                        toggleRateInput();
+                    };
                 }
+
+                const btnCerrar = el.querySelector('.btn-cerrar');
+                if (btnCerrar) {
+                    btnCerrar.onclick = () => toggleCloseFixedExpense(item.id, true);
+                }
+
+                const btnReabrir = el.querySelector('.btn-reabrir');
+                if (btnReabrir) {
+                    btnReabrir.onclick = () => toggleCloseFixedExpense(item.id, false);
+                }
+
                 grid.appendChild(el);
             });
-            
-            document.getElementById('fixed-progress-text').innerText = `${paidCount} / ${fixed.length} completados`;
-
-            // Asignar eventos a los botones de "Abono"
-            document.querySelectorAll('.btn-add-payment').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    openAddModal();
-                    document.getElementById('exp-desc').value = btn.dataset.name;
-                    document.getElementById('exp-amount').value = btn.dataset.remaining; // Te sugiere pagar lo que falta
-                    document.getElementById('exp-currency').value = 'USD';
-                    document.querySelector('input[value="expense"]').checked = true;
-                    updateCategories();
-                    document.querySelector('input[value="shared"]').checked = true;
-                    document.getElementById('exp-category').value = btn.dataset.category;
-                    toggleRateInput();
-                });
-            });
-
-            // Asignar eventos al botón de "Cerrar" manual
-            document.querySelectorAll('.btn-mark-complete').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    markFixedAsComplete(btn.dataset.name);
-                });
-            });
+            document.getElementById('fixed-progress-text').innerText = `${completedCount} / ${fixed.length} completados`;
         }
 
-        // Función que guarda una "marca invisible" para saber que cerraste el gasto aunque no hayas llegado al 100%
-        window.markFixedAsComplete = async function(name) {
-            const docId = 'trans_' + Date.now();
-            const parts = document.getElementById('month-selector').value.split('-');
-            const data = {
-                type: 'expense', scope: 'shared', desc: name,
-                amount: 0, originalAmount: 0, originalCurrency: 'USD', exchangeRate: null,
-                category: 'Otro', payer: 'p1',
-                timestamp: new Date(parts[0], parts[1]-1, 15, 12,0,0).getTime(), 
-                isCompletionMarker: true // Esta bandera oculta la transacción del historial pero cierra el gasto
-            };
-            setCloudStatus('Cerrando...', 'text-yellow-500');
-            try { 
-                await setDoc(doc(db, 'transacciones', docId), data); 
-                showToast('Gasto cerrado por este mes'); 
-            } catch(e) { 
-                showToast('Error al cerrar gasto', 'error'); 
+        async function toggleCloseFixedExpense(fixedId, closeState) {
+            if (!appState.settings.closedFixed) appState.settings.closedFixed = {};
+            if (!appState.settings.closedFixed[selectedMonth]) appState.settings.closedFixed[selectedMonth] = {};
+            
+            if (closeState) {
+                appState.settings.closedFixed[selectedMonth][fixedId] = true;
+            } else {
+                delete appState.settings.closedFixed[selectedMonth][fixedId];
             }
-        };
+
+            try {
+                await setDoc(doc(db, 'configuracion', 'ajustes'), appState.settings);
+                showToast(closeState ? 'Gasto fijo dado por completado' : 'Gasto fijo reabierto');
+            } catch (e) {
+                showToast('Error al actualizar estado', 'error');
+            }
+        }
 
         function renderTransactionsList(transactions) {
             const listEl = document.getElementById('expenses-list');
             listEl.innerHTML = '';
             
             const filtered = transactions.filter(t => {
-                if (t.isCompletionMarker) return false; // Ocultamos las marcas de cierre para no ensuciar tu historial
-                
                 if (currentTab === 'all') return true;
-                if (currentTab === 'shared') return t.scope === 'shared' && t.type === 'expense';
-                if (currentTab === 'p1') return t.payer === 'p1' && (t.scope === 'individual' || t.type === 'income');
-                if (currentTab === 'p2') return t.payer === 'p2' && (t.scope === 'individual' || t.type === 'income');
+                if (currentTab === 'savings') return t.type === 'expense' && t.category === 'Ahorro';
+                if (currentTab === 'shared') return t.scope === 'shared' && t.type === 'expense' && t.category !== 'Ahorro';
+                if (currentTab === 'p1') return t.payer === 'p1' && (t.scope === 'individual' || t.type === 'income' || t.category === 'Ahorro');
+                if (currentTab === 'p2') return t.payer === 'p2' && (t.scope === 'individual' || t.type === 'income' || t.category === 'Ahorro');
             }).sort((a,b) => b.timestamp - a.timestamp);
 
-            if (filtered.length === 0) { listEl.innerHTML = `<div class="p-8 text-center text-slate-400">No hay movimientos.</div>`; return; }
+            if (filtered.length === 0) { listEl.innerHTML = `<div class="p-8 text-center text-slate-400">No hay movimientos en esta vista.</div>`; return; }
 
             filtered.forEach(t => {
                 const dateStr = new Date(t.timestamp).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
                 const payerName = t.payer === 'p1' ? appState.settings.p1.name : appState.settings.p2.name;
                 const isIncome = t.type === 'income';
+                const isSaving = t.type === 'expense' && t.category === 'Ahorro';
                 
+                let badgeHtml = '';
+                if (isSaving) {
+                    badgeHtml = '<span class="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded border border-emerald-200 ml-2 font-bold"><i class="fa-solid fa-piggy-bank mr-1"></i>Ahorro</span>';
+                } else if (!isIncome) {
+                    badgeHtml = t.scope === 'shared' 
+                        ? '<span class="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded border border-slate-200 ml-2">Pareja</span>' 
+                        : '<span class="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded border border-slate-200 ml-2">Personal</span>';
+                }
+
                 const el = document.createElement('div');
                 el.className = 'px-5 py-4 flex justify-between items-center hover:bg-slate-50 transition group';
                 el.innerHTML = `
                     <div class="flex flex-1">
                         <div>
-                            <p class="font-bold text-dark text-sm">${t.desc} ${!isIncome ? (t.scope === 'shared' ? '<span class="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded border border-slate-200 ml-2">Pareja</span>' : '<span class="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded border border-slate-200 ml-2">Personal</span>') : ''}</p>
-                            <p class="text-xs mt-1 text-slate-500">${dateStr} • <span class="font-bold ${t.payer === 'p1' ? 'text-indigo-600' : 'text-teal-600'}">${isIncome ? 'Ingresó' : 'Pagó'} ${payerName}</span></p>
+                            <p class="font-bold text-dark text-sm">${t.desc} ${badgeHtml}</p>
+                            <p class="text-xs mt-1 text-slate-500">${dateStr} • <span class="text-slate-400">${t.category || 'General'}</span> • <span class="font-bold ${t.payer === 'p1' ? 'text-indigo-600' : 'text-teal-600'}">${isIncome ? 'Ingresó' : (isSaving ? 'Ahorró' : 'Pagó')} ${payerName}</span></p>
                         </div>
                     </div>
                     <div class="text-right ml-4 flex flex-col items-end">
-                        <p class="font-black ${isIncome ? 'text-emerald-600' : 'text-slate-800'} text-lg">${isIncome ? '+' : '-'}$${parseFloat(t.amount).toFixed(2)}</p>
-                        ${t.originalCurrency === 'VES' ? `<p class="text-[10px] text-slate-400 mt-0.5">Bs. ${t.originalAmount.toFixed(2)}</p>` : ''}
+                        <p class="font-black ${isIncome ? 'text-emerald-600' : (isSaving ? 'text-teal-600' : 'text-slate-800')} text-lg">${isIncome ? '+' : (isSaving ? '🐷 ' : '-')}$${parseFloat(t.amount).toFixed(2)}</p>
+                        ${t.originalCurrency === 'VES' && t.originalAmount ? `<p class="text-[10px] text-slate-400 mt-0.5">Bs. ${parseFloat(t.originalAmount).toFixed(2)}</p>` : ''}
                         <div class="flex gap-2 mt-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100">
                             <button onclick="editTransaction('${t.id}')" class="text-slate-400 hover:text-primary text-xs bg-white border border-slate-200 px-2 py-1 rounded shadow-sm"><i class="fa-solid fa-pen"></i></button>
                             <button onclick="requestDelete('${t.id}')" class="text-slate-400 hover:text-danger text-xs bg-white border border-slate-200 px-2 py-1 rounded shadow-sm"><i class="fa-solid fa-trash"></i></button>
@@ -729,7 +939,7 @@
             const sel = document.getElementById('exp-category');
             sel.innerHTML = '';
             CATEGORIES[type].forEach(c => { const o = document.createElement('option'); o.value = c.val; o.innerText = c.text; sel.appendChild(o); });
-            if (type === 'expense') { document.getElementById('payer-label').innerText = '¿Quién lo pagó?'; document.getElementById('scope-container').classList.remove('hidden'); } 
+            if (type === 'expense') { document.getElementById('payer-label').innerText = '¿Quién lo pagó / ahorró?'; document.getElementById('scope-container').classList.remove('hidden'); } 
             else { document.getElementById('payer-label').innerText = '¿A quién ingresó?'; document.getElementById('scope-container').classList.add('hidden'); document.querySelector('input[value="individual"]').checked = true; }
         }
 
@@ -739,12 +949,20 @@
         window.editTransaction = function(id) {
             const t = appState.transactions.find(x => x.id === id); if(!t) return;
             document.getElementById('edit-id').value = t.id;
-            document.querySelector(`input[value="${t.type}"]`).checked = true; updateCategories();
+            document.querySelector(`input[name="trans-type"][value="${t.type}"]`).checked = true; updateCategories();
             document.querySelector(`input[name="exp-scope"][value="${t.scope}"]`).checked = true;
             document.getElementById('exp-date').value = new Date(t.timestamp).toISOString().split('T')[0];
             document.getElementById('exp-desc').value = t.desc; document.getElementById('exp-currency').value = t.originalCurrency || 'USD'; document.getElementById('exp-amount').value = t.originalAmount || t.amount;
             if(t.originalCurrency === 'VES') document.getElementById('exp-rate').value = t.exchangeRate;
-            document.getElementById('exp-category').value = t.category; document.querySelector(`input[value="${t.payer}"]`).checked = true;
+            
+            // Si la categoría guardada antes era "Fijo", asegurar que exista en el selector
+            const catExists = Array.from(document.getElementById('exp-category').options).some(opt => opt.value === t.category);
+            if (!catExists && t.category) {
+                const o = document.createElement('option'); o.value = t.category; o.innerText = t.category;
+                document.getElementById('exp-category').appendChild(o);
+            }
+            document.getElementById('exp-category').value = t.category;
+            document.querySelector(`input[name="exp-payer"][value="${t.payer}"]`).checked = true;
             toggleRateInput(); document.getElementById('add-modal').classList.remove('hidden');
         }
 
@@ -759,11 +977,14 @@
             if (currency === 'VES') { if (!rate || rate <= 0) return showToast('Ingresa una tasa válida', 'error'); finalUsd = rawAmount / rate; appliedRate = rate; }
             const parts = document.getElementById('exp-date').value.split('-');
 
+            const selectedType = document.querySelector('input[name="trans-type"]:checked').value;
+            const selectedCat = document.getElementById('exp-category').value;
+
             const data = {
-                type: document.querySelector('input[name="trans-type"]:checked').value,
-                scope: document.querySelector('input[name="trans-type"]:checked').value === 'income' ? 'individual' : document.querySelector('input[name="exp-scope"]:checked').value,
+                type: selectedType,
+                scope: (selectedType === 'income' || selectedCat === 'Ahorro') ? 'individual' : document.querySelector('input[name="exp-scope"]:checked').value,
                 desc: document.getElementById('exp-desc').value, amount: finalUsd, originalAmount: rawAmount, originalCurrency: currency, exchangeRate: appliedRate,
-                category: document.getElementById('exp-category').value, payer: document.querySelector('input[name="exp-payer"]:checked').value,
+                category: selectedCat, payer: document.querySelector('input[name="exp-payer"]:checked').value,
                 timestamp: new Date(parts[0], parts[1]-1, parts[2], 12,0,0).getTime()
             };
 
